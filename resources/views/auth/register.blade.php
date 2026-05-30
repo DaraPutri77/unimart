@@ -1,52 +1,122 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
-        @csrf
+    <div class="auth-card">
+        <section class="auth-left">
+            <div class="auth-left-content">
+                <div class="auth-brand">
+                    <x-application-logo />
+                    <div class="auth-brand-text">
+                        <h2>UniMart</h2>
+                        <p>Campus Marketplace</p>
+                    </div>
+                </div>
 
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
-        </div>
+                <div class="auth-badge">Akun Baru</div>
 
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+                <h1 class="auth-title">
+                    Mulai jual produkmu di lingkungan kampus.
+                </h1>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+                <p class="auth-desc">
+                    Daftar untuk menjual barang baru maupun barang layak pakai, menjangkau pembeli, dan mengelola produkmu dengan mudah.
+                </p>
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
+                <div class="auth-list">
+                    <div class="auth-list-item">🎓 Daftar sebagai pengguna UniMart</div>
+                    <div class="auth-list-item">📦 Tambahkan produk jualanmu</div>
+                </div>
+            </div>
+        </section>
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+        <section class="auth-right">
+            <div class="auth-form-wrap">
+                <div class="auth-mobile-brand">
+                    <x-application-logo />
+                    <div>
+                        <h2 style="margin:0; font-size:20px; font-weight:900; color:#111827;">UniMart</h2>
+                        <p style="margin:4px 0 0; color:#6b7280; font-size:12px; font-weight:600;">Campus Marketplace</p>
+                    </div>
+                </div>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+                <p class="auth-kicker">Buat Akun</p>
+                <h1 class="auth-heading">Daftar ke UniMart</h1>
+                <p class="auth-subheading">
+                    Isi data di bawah ini untuk membuat akun baru.
+                </p>
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
+                <form method="POST" action="{{ route('register') }}" class="auth-form">
+                    @csrf
 
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
+                    <div>
+                        <label for="name" class="auth-label">Nama Lengkap</label>
+                        <input
+                            id="name"
+                            class="auth-input"
+                            type="text"
+                            name="name"
+                            value="{{ old('name') }}"
+                            required
+                            autofocus
+                            autocomplete="name"
+                            placeholder="Nama lengkap"
+                        >
+                        <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                    </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
+                    <div>
+                        <label for="email" class="auth-label">Email</label>
+                        <input
+                            id="email"
+                            class="auth-input"
+                            type="email"
+                            name="email"
+                            value="{{ old('email') }}"
+                            required
+                            autocomplete="username"
+                            placeholder="nama@email.com"
+                        >
+                        <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                    </div>
 
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
-        </div>
-    </form>
+                    <div class="auth-two-cols">
+                        <div>
+                            <label for="password" class="auth-label">Password</label>
+                            <input
+                                id="password"
+                                class="auth-input"
+                                type="password"
+                                name="password"
+                                required
+                                autocomplete="new-password"
+                                placeholder="Minimal 8 karakter"
+                            >
+                            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                        </div>
+
+                        <div>
+                            <label for="password_confirmation" class="auth-label">Konfirmasi</label>
+                            <input
+                                id="password_confirmation"
+                                class="auth-input"
+                                type="password"
+                                name="password_confirmation"
+                                required
+                                autocomplete="new-password"
+                                placeholder="Ulangi password"
+                            >
+                            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+                        </div>
+                    </div>
+
+                    <button type="submit" class="auth-button">
+                        Daftar
+                    </button>
+                </form>
+
+                <p class="auth-footer">
+                    Sudah punya akun?
+                    <a href="{{ route('login') }}" class="auth-link">Login sekarang</a>
+                </p>
+            </div>
+        </section>
+    </div>
 </x-guest-layout>
