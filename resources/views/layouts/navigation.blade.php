@@ -5,6 +5,7 @@
                 <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-900 to-pink-500 text-xl font-black text-white shadow-lg shadow-pink-200">
                     U
                 </div>
+
                 <div>
                     <p class="text-xl font-black leading-none text-slate-900">UniMart</p>
                     <p class="mt-1 text-xs font-semibold text-slate-500">Campus Marketplace</p>
@@ -16,14 +17,28 @@
                     Home
                 </a>
 
+                @auth
+                    @if (auth()->user()->is_admin)
+                        <a href="{{ route('admin.dashboard') }}" class="text-sm font-bold text-slate-600 transition hover:text-pink-600">
+                            Dashboard Admin
+                        </a>
+                    @else
+                        <a href="{{ route('dashboard') }}" class="text-sm font-bold text-slate-600 transition hover:text-pink-600">
+                            Dashboard
+                        </a>
+                    @endif
+                @endauth
+
                 <a href="{{ route('produk.index') }}" class="text-sm font-bold text-slate-600 transition hover:text-pink-600">
                     Produk
                 </a>
 
                 @auth
-                    <a href="{{ route('produk.create') }}" class="text-sm font-bold text-slate-600 transition hover:text-pink-600">
-                        Jual Barang
-                    </a>
+                    @if (! auth()->user()->is_admin)
+                        <a href="{{ route('produk.create') }}" class="text-sm font-bold text-slate-600 transition hover:text-pink-600">
+                            Jual Barang
+                        </a>
+                    @endif
 
                     <a href="{{ route('profile.edit') }}" class="text-sm font-bold text-slate-600 transition hover:text-pink-600">
                         Profil
@@ -35,6 +50,7 @@
 
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
+
                         <button type="submit" class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white transition hover:bg-pink-600">
                             Logout
                         </button>
