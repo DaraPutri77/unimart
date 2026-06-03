@@ -13,6 +13,7 @@ class Produk extends Model
         'harga',
         'stok',
         'kategori',
+        'fakultas',
         'deskripsi',
         'foto',
         'aktif',

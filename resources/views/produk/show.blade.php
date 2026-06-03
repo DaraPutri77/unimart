@@ -26,9 +26,13 @@
                 </div>
 
                 <div>
-                    <div class="flex gap-3">
+                    <div class="flex flex-wrap gap-3">
                         <span class="rounded-full bg-pink-100 px-4 py-2 text-xs font-black text-pink-700">
                             {{ $produk->kategori }}
+                        </span>
+
+                        <span class="rounded-full bg-slate-100 px-4 py-2 text-xs font-black text-slate-700">
+                            {{ $produk->fakultas }}
                         </span>
 
                         @if ($produk->aktif)
@@ -52,6 +56,7 @@
 
                     <div class="mt-6 space-y-3 text-slate-600">
                         <p><span class="font-bold text-slate-900">Stok:</span> {{ $produk->stok }}</p>
+                        <p><span class="font-bold text-slate-900">Fakultas:</span> {{ $produk->fakultas }}</p>
                         <p><span class="font-bold text-slate-900">Penjual:</span> {{ $produk->user->name ?? '-' }}</p>
                         <p><span class="font-bold text-slate-900">WhatsApp:</span> {{ $produk->user->whatsapp ?? 'Belum diisi' }}</p>
                         <p><span class="font-bold text-slate-900">Tanggal ditambahkan:</span> {{ $produk->created_at->format('d M Y') }}</p>

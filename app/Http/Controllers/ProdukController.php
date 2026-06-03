@@ -18,36 +18,57 @@ class ProdukController extends Controller
         'Lainnya',
     ];
 
+    private array $fakultasList = [
+        'SAINTEK',
+        'FAI',
+        'FBBP',
+        'Fakultas Kesehatan',
+    ];
+
     public function index(Request $request): View
     {
         $search = $request->query('search');
         $kategori = $request->query('kategori');
+        $fakultas = $request->query('fakultas');
 
         $produks = Produk::with('user')
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('nama', 'like', '%' . $search . '%')
                         ->orWhere('kategori', 'like', '%' . $search . '%')
+                        ->orWhere('fakultas', 'like', '%' . $search . '%')
                         ->orWhere('deskripsi', 'like', '%' . $search . '%');
                 });
             })
             ->when($kategori, function ($query) use ($kategori) {
                 $query->where('kategori', $kategori);
             })
+            ->when($fakultas, function ($query) use ($fakultas) {
+                $query->where('fakultas', $fakultas);
+            })
             ->latest()
             ->paginate(6)
             ->withQueryString();
 
         $kategoriList = $this->kategoriList;
+        $fakultasList = $this->fakultasList;
 
-        return view('produk.index', compact('produks', 'kategoriList', 'search', 'kategori'));
+        return view('produk.index', compact(
+            'produks',
+            'kategoriList',
+            'fakultasList',
+            'search',
+            'kategori',
+            'fakultas'
+        ));
     }
 
     public function create(): View
     {
         $kategoriList = $this->kategoriList;
+        $fakultasList = $this->fakultasList;
 
-        return view('produk.create', compact('kategoriList'));
+        return view('produk.create', compact('kategoriList', 'fakultasList'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -57,6 +78,7 @@ class ProdukController extends Controller
             'harga' => ['required', 'integer', 'min:0'],
             'stok' => ['required', 'integer', 'min:0'],
             'kategori' => ['required', 'string', 'in:Elektronik,Aksesori,Buku,Fashion,Lainnya'],
+            'fakultas' => ['required', 'string', 'in:SAINTEK,FAI,FBBP,Fakultas Kesehatan'],
             'deskripsi' => ['nullable', 'string'],
         ]);
 
@@ -82,8 +104,9 @@ class ProdukController extends Controller
         $this->authorizeOwner($produk);
 
         $kategoriList = $this->kategoriList;
+        $fakultasList = $this->fakultasList;
 
-        return view('produk.edit', compact('produk', 'kategoriList'));
+        return view('produk.edit', compact('produk', 'kategoriList', 'fakultasList'));
     }
 
     public function update(Request $request, Produk $produk): RedirectResponse
@@ -95,6 +118,7 @@ class ProdukController extends Controller
             'harga' => ['required', 'integer', 'min:0'],
             'stok' => ['required', 'integer', 'min:0'],
             'kategori' => ['required', 'string', 'in:Elektronik,Aksesori,Buku,Fashion,Lainnya'],
+            'fakultas' => ['required', 'string', 'in:SAINTEK,FAI,FBBP,Fakultas Kesehatan'],
             'deskripsi' => ['nullable', 'string'],
         ]);
 

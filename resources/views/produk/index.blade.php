@@ -24,8 +24,8 @@
                     </p>
                 </div>
 
-                <div class="w-full lg:max-w-2xl">
-                    <form method="GET" action="{{ route('produk.index') }}" class="grid gap-3 md:grid-cols-[1fr_180px_120px]">
+                <div class="w-full lg:max-w-4xl">
+                    <form method="GET" action="{{ route('produk.index') }}" class="grid gap-3 md:grid-cols-[1fr_170px_190px_110px]">
                         <input
                             type="text"
                             name="search"
@@ -42,6 +42,19 @@
 
                             @foreach ($kategoriList as $item)
                                 <option value="{{ $item }}" @selected($kategori === $item)>
+                                    {{ $item }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        <select
+                            name="fakultas"
+                            class="rounded-2xl border border-slate-200 px-4 py-3 focus:border-pink-500 focus:ring-pink-500"
+                        >
+                            <option value="">Semua Fakultas</option>
+
+                            @foreach ($fakultasList as $item)
+                                <option value="{{ $item }}" @selected($fakultas === $item)>
                                     {{ $item }}
                                 </option>
                             @endforeach
@@ -66,11 +79,17 @@
 
             <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 @forelse ($produks as $produk)
-                    <article class="flex min-h-[360px] flex-col rounded-[28px] bg-white p-6 shadow-xl shadow-rose-100/70">
-                        <div class="mb-5 flex items-center justify-between">
-                            <span class="rounded-full bg-pink-100 px-4 py-2 text-xs font-black text-pink-700">
-                                {{ $produk->kategori }}
-                            </span>
+                    <article class="flex min-h-[390px] flex-col rounded-[28px] bg-white p-6 shadow-xl shadow-rose-100/70">
+                        <div class="mb-5 flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex flex-wrap gap-2">
+                                <span class="rounded-full bg-pink-100 px-4 py-2 text-xs font-black text-pink-700">
+                                    {{ $produk->kategori }}
+                                </span>
+
+                                <span class="rounded-full bg-slate-100 px-4 py-2 text-xs font-black text-slate-700">
+                                    {{ $produk->fakultas }}
+                                </span>
+                            </div>
 
                             @if ($produk->aktif)
                                 <span class="rounded-full bg-green-100 px-4 py-2 text-xs font-black text-green-700">
@@ -96,6 +115,13 @@
                                 Stok:
                                 <span class="font-bold text-slate-800">
                                     {{ $produk->stok }}
+                                </span>
+                            </p>
+
+                            <p>
+                                Fakultas:
+                                <span class="font-bold text-slate-800">
+                                    {{ $produk->fakultas }}
                                 </span>
                             </p>
 
