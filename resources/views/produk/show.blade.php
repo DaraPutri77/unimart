@@ -121,6 +121,16 @@
                                     $pesan = urlencode('Halo, saya tertarik dengan produk ' . $produk->nama . ' di UniMart.');
                                 @endphp
 
+                                @if ($produk->aktif && ! auth()->user()->is_admin)
+                                    <form method="POST" action="{{ route('keranjang.store', $produk) }}">
+                                        @csrf
+
+                                        <button class="w-full rounded-2xl bg-gradient-to-r from-slate-900 to-pink-500 px-5 py-3 font-bold text-white">
+                                            + Tambah ke Keranjang
+                                        </button>
+                                    </form>
+                                @endif
+
                                 @if ($produk->aktif && $wa)
                                     <a
                                         href="https://wa.me/{{ $wa }}?text={{ $pesan }}"

@@ -38,6 +38,10 @@
                         <a href="{{ route('produk.create') }}" class="text-sm font-bold text-slate-600 transition hover:text-pink-600">
                             Jual Barang
                         </a>
+
+                        <a href="{{ route('keranjang.index') }}" class="text-sm font-bold text-slate-600 transition hover:text-pink-600">
+                            Keranjang
+                        </a>
                     @endif
 
                     <a href="{{ route('profile.edit') }}" class="text-sm font-bold text-slate-600 transition hover:text-pink-600">

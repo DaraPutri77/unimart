@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\KeranjangController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProdukController;
 use Illuminate\Support\Facades\Route;
@@ -61,6 +62,16 @@ Route::middleware('auth')->group(function () {
     Route::patch('/produk/{produk}/tersedia', [ProdukController::class, 'tandaiTersedia'])
         ->whereNumber('produk')
         ->name('produk.tersedia');
+
+    Route::get('/keranjang', [KeranjangController::class, 'index'])->name('keranjang.index');
+
+    Route::post('/keranjang/{produk}', [KeranjangController::class, 'store'])
+        ->whereNumber('produk')
+        ->name('keranjang.store');
+
+    Route::delete('/keranjang/{keranjang}', [KeranjangController::class, 'destroy'])
+        ->whereNumber('keranjang')
+        ->name('keranjang.destroy');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
