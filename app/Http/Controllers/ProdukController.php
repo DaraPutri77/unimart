@@ -32,6 +32,9 @@ class ProdukController extends Controller
         $fakultas = $request->query('fakultas');
 
         $produks = Produk::with('user')
+            ->when(Auth::check(), function ($query) {
+                $query->where('user_id', '!=', Auth::id());
+            })
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('nama', 'like', '%' . $search . '%')
@@ -63,6 +66,45 @@ class ProdukController extends Controller
         ));
     }
 
+    public function produkSaya(Request $request): View
+    {
+        $search = $request->query('search');
+        $kategori = $request->query('kategori');
+        $fakultas = $request->query('fakultas');
+
+        $produks = Produk::with('user')
+            ->where('user_id', Auth::id())
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('nama', 'like', '%' . $search . '%')
+                        ->orWhere('kategori', 'like', '%' . $search . '%')
+                        ->orWhere('fakultas', 'like', '%' . $search . '%')
+                        ->orWhere('deskripsi', 'like', '%' . $search . '%');
+                });
+            })
+            ->when($kategori, function ($query) use ($kategori) {
+                $query->where('kategori', $kategori);
+            })
+            ->when($fakultas, function ($query) use ($fakultas) {
+                $query->where('fakultas', $fakultas);
+            })
+            ->latest()
+            ->paginate(6)
+            ->withQueryString();
+
+        $kategoriList = $this->kategoriList;
+        $fakultasList = $this->fakultasList;
+
+        return view('produk.saya', compact(
+            'produks',
+            'kategoriList',
+            'fakultasList',
+            'search',
+            'kategori',
+            'fakultas'
+        ));
+    }
+
     public function create(): View
     {
         $kategoriList = $this->kategoriList;
@@ -85,10 +127,10 @@ class ProdukController extends Controller
         $validated['user_id'] = Auth::id();
         $validated['aktif'] = true;
 
-        Produk::create($validated);
+        $produk = Produk::create($validated);
 
         return redirect()
-            ->route('produk.index')
+            ->route('produk.show', $produk)
             ->with('success', 'Produk berhasil ditambahkan.');
     }
 
@@ -136,7 +178,7 @@ class ProdukController extends Controller
         $produk->delete();
 
         return redirect()
-            ->route('produk.index')
+            ->route('produk.saya')
             ->with('success', 'Produk berhasil dihapus.');
     }
 
