@@ -51,21 +51,14 @@
 
                     <a
                         href="{{ route('produk.index') }}"
-                        class="unimart-link {{ request()->routeIs('produk.index') || request()->routeIs('produk.show') ? 'active' : '' }}"
+                        class="unimart-link {{ request()->routeIs('produk.index') ? 'active' : '' }}"
                     >
                         Produk
                     </a>
 
                     <a
-                        href="{{ route('produk.create') }}"
-                        class="unimart-link {{ request()->routeIs('produk.create') ? 'active' : '' }}"
-                    >
-                        Jual Barang
-                    </a>
-
-                    <a
                         href="{{ route('produk.saya') }}"
-                        class="unimart-link {{ request()->routeIs('produk.saya') || request()->routeIs('produk.edit') ? 'active' : '' }}"
+                        class="unimart-link {{ request()->routeIs('produk.saya') || request()->routeIs('produk.create') || request()->routeIs('produk.edit') ? 'active' : '' }}"
                     >
                         Produk Saya
                     </a>
@@ -218,7 +211,7 @@
             white-space: nowrap;
         }
 
-        @media (max-width: 1100px) {
+        @media (max-width: 1180px) {
             .unimart-nav-container {
                 align-items: flex-start;
                 flex-direction: column;
