@@ -27,6 +27,23 @@ class Produk extends Model
         'aktif' => 'boolean',
     ];
 
+    protected $appends = [
+        'gambar_url',
+    ];
+
+    public function getGambarUrlAttribute(): ?string
+    {
+        if (! $this->gambar) {
+            return null;
+        }
+
+        if (str_starts_with($this->gambar, 'demo-products/')) {
+            return asset($this->gambar);
+        }
+
+        return asset('storage/' . $this->gambar);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
