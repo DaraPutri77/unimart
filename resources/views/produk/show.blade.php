@@ -1,162 +1,149 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+            <div>
+                <h2 style="font-size:28px; font-weight:900; color:#0f172a; margin:0;">
+                    Detail Produk
+                </h2>
+                <p style="margin:6px 0 0; color:#64748b; font-size:15px;">
+                    Informasi lengkap produk di UniMart.
+                </p>
+            </div>
 
-@section('content')
-    <section class="bg-gradient-to-br from-rose-50 via-white to-pink-50 py-10">
-        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <a
+                href="{{ auth()->id() === $produk->user_id ? route('produk.saya') : route('produk.index') }}"
+                style="display:inline-flex; align-items:center; justify-content:center; padding:13px 20px; border-radius:16px; background:#f1f5f9; color:#334155; font-weight:900; text-decoration:none;"
+            >
+                ← Kembali
+            </a>
+        </div>
+    </x-slot>
+
+    <div style="padding:36px 24px; background:#fff7fb; min-height:calc(100vh - 120px);">
+        <div style="max-width:1100px; margin:0 auto;">
             @if (session('success'))
-                <div class="mb-6 rounded-2xl bg-green-100 px-5 py-4 font-semibold text-green-700">
+                <div style="margin-bottom:20px; padding:14px 18px; border-radius:16px; background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; font-weight:800;">
                     {{ session('success') }}
                 </div>
             @endif
 
-            <a href="{{ route('produk.index') }}" class="font-bold text-pink-600">
-                ← Kembali ke Daftar Produk
-            </a>
+            @if (session('error'))
+                <div style="margin-bottom:20px; padding:14px 18px; border-radius:16px; background:#fff1f2; color:#be123c; border:1px solid #fecdd3; font-weight:800;">
+                    {{ session('error') }}
+                </div>
+            @endif
 
-            <div class="mt-6 grid gap-8 rounded-[32px] bg-white p-8 shadow-xl shadow-rose-100 lg:grid-cols-[0.9fr_1.1fr]">
-                <div class="flex min-h-[360px] items-center justify-center rounded-[28px] bg-gradient-to-br from-rose-100 to-pink-50">
-                    <div class="text-center">
-                        <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-slate-900 to-pink-500 text-4xl font-black text-white">
-                            U
+            <div style="display:grid; grid-template-columns:0.95fr 1.05fr; gap:28px; align-items:start;">
+                <div style="background:white; border-radius:28px; padding:22px; box-shadow:0 18px 45px rgba(15,23,42,0.06);">
+                    @if ($produk->gambar)
+                        <img
+                            src="{{ asset('storage/' . $produk->gambar) }}"
+                            alt="{{ $produk->nama }}"
+                            style="width:100%; height:380px; object-fit:cover; border-radius:22px; border:1px solid #e2e8f0;"
+                        >
+                    @else
+                        <div style="width:100%; height:380px; border-radius:22px; background:linear-gradient(135deg,#111827,#db2777); display:flex; align-items:center; justify-content:center; color:white; font-size:72px; font-weight:900;">
+                            🛍️
                         </div>
-                        <p class="mt-4 font-bold text-pink-700">
-                            Foto produk belum tersedia
-                        </p>
-                    </div>
+                    @endif
                 </div>
 
-                <div>
-                    <div class="flex flex-wrap gap-3">
-                        <span class="rounded-full bg-pink-100 px-4 py-2 text-xs font-black text-pink-700">
-                            {{ $produk->kategori }}
-                        </span>
+                <div style="background:white; border-radius:28px; padding:28px; box-shadow:0 18px 45px rgba(15,23,42,0.06);">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px; flex-wrap:wrap;">
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <span style="padding:8px 14px; border-radius:999px; background:#fce7f3; color:#be185d; font-size:13px; font-weight:900;">
+                                {{ $produk->kategori }}
+                            </span>
 
-                        <span class="rounded-full bg-slate-100 px-4 py-2 text-xs font-black text-slate-700">
-                            {{ $produk->fakultas }}
-                        </span>
+                            <span style="padding:8px 14px; border-radius:999px; background:#f1f5f9; color:#334155; font-size:13px; font-weight:900;">
+                                {{ $produk->fakultas }}
+                            </span>
+                        </div>
 
                         @if ($produk->aktif)
-                            <span class="rounded-full bg-green-100 px-4 py-2 text-xs font-black text-green-700">
+                            <span style="padding:8px 14px; border-radius:999px; background:#dcfce7; color:#15803d; font-size:13px; font-weight:900;">
                                 Tersedia
                             </span>
                         @else
-                            <span class="rounded-full bg-red-100 px-4 py-2 text-xs font-black text-red-700">
+                            <span style="padding:8px 14px; border-radius:999px; background:#fee2e2; color:#b91c1c; font-size:13px; font-weight:900;">
                                 Terjual
                             </span>
                         @endif
                     </div>
 
-                    <h1 class="mt-5 text-4xl font-black text-slate-900">
+                    <h1 style="margin:0 0 16px; font-size:34px; line-height:1.25; font-weight:900; color:#0f172a;">
                         {{ $produk->nama }}
                     </h1>
 
-                    <p class="mt-4 text-4xl font-black text-pink-600">
+                    <div style="margin-bottom:24px; font-size:42px; font-weight:900; color:#db2777;">
                         Rp {{ number_format($produk->harga, 0, ',', '.') }}
-                    </p>
-
-                    <div class="mt-6 space-y-3 text-slate-600">
-                        <p><span class="font-bold text-slate-900">Stok:</span> {{ $produk->stok }}</p>
-                        <p><span class="font-bold text-slate-900">Fakultas:</span> {{ $produk->fakultas }}</p>
-                        <p><span class="font-bold text-slate-900">Penjual:</span> {{ $produk->user->name ?? '-' }}</p>
-                        <p><span class="font-bold text-slate-900">WhatsApp:</span> {{ $produk->user->whatsapp ?? 'Belum diisi' }}</p>
-                        <p><span class="font-bold text-slate-900">Tanggal ditambahkan:</span> {{ $produk->created_at->format('d M Y') }}</p>
                     </div>
 
-                    <div class="mt-8">
-                        <h2 class="text-xl font-black text-slate-900">Deskripsi Produk</h2>
-                        <p class="mt-3 leading-7 text-slate-600">
+                    <div style="display:grid; gap:10px; margin-bottom:24px; color:#334155; font-size:16px;">
+                        <div>Stok: <strong style="color:#0f172a;">{{ $produk->stok }}</strong></div>
+                        <div>Fakultas: <strong style="color:#0f172a;">{{ $produk->fakultas }}</strong></div>
+                        <div>Penjual: <strong style="color:#0f172a;">{{ $produk->user->name ?? '-' }}</strong></div>
+                        <div>WhatsApp: <strong style="color:#0f172a;">{{ $produk->user->whatsapp ?? '-' }}</strong></div>
+                    </div>
+
+                    <div style="margin-bottom:28px;">
+                        <h3 style="margin:0 0 10px; font-size:18px; font-weight:900; color:#0f172a;">
+                            Deskripsi Produk
+                        </h3>
+
+                        <p style="margin:0; color:#475569; line-height:1.8; font-size:15px;">
                             {{ $produk->deskripsi ?: 'Belum ada deskripsi produk.' }}
                         </p>
                     </div>
 
-                    <div class="mt-8 space-y-3">
-                        @auth
-                            @if (auth()->id() === $produk->user_id)
-                                <div class="grid gap-3 md:grid-cols-2">
-                                    <a href="{{ route('produk.edit', $produk) }}" class="rounded-2xl bg-amber-400 px-5 py-3 text-center font-bold text-white">
-                                        Edit Produk
-                                    </a>
-
-                                    <form method="POST" action="{{ route('produk.destroy', $produk) }}" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <button class="w-full rounded-2xl bg-red-500 px-5 py-3 font-bold text-white">
-                                            Hapus Produk
-                                        </button>
-                                    </form>
-                                </div>
-
-                                @if ($produk->aktif)
-                                    <form method="POST" action="{{ route('produk.terjual', $produk) }}">
-                                        @csrf
-                                        @method('PATCH')
-
-                                        <button class="w-full rounded-2xl bg-slate-900 px-5 py-3 font-bold text-white">
-                                            Tandai Terjual
-                                        </button>
-                                    </form>
-                                @else
-                                    <form method="POST" action="{{ route('produk.tersedia', $produk) }}">
-                                        @csrf
-                                        @method('PATCH')
-
-                                        <button class="w-full rounded-2xl bg-green-600 px-5 py-3 font-bold text-white">
-                                            Tandai Tersedia
-                                        </button>
-                                    </form>
-                                @endif
-
-                                <div class="rounded-2xl bg-pink-50 px-5 py-4 font-semibold text-pink-700">
-                                    Ini adalah produk milikmu. Kamu bisa mengedit, menghapus, atau mengubah status produk ini.
-                                </div>
-                            @else
-                                @php
-                                    $wa = preg_replace('/\D/', '', $produk->user->whatsapp ?? '');
-
-                                    if (str_starts_with($wa, '0')) {
-                                        $wa = '62' . substr($wa, 1);
-                                    }
-
-                                    $pesan = urlencode('Halo, saya tertarik dengan produk ' . $produk->nama . ' di UniMart.');
-                                @endphp
-
-                                @if ($produk->aktif && ! auth()->user()->is_admin)
-                                    <form method="POST" action="{{ route('keranjang.store', $produk) }}">
-                                        @csrf
-
-                                        <button class="w-full rounded-2xl bg-gradient-to-r from-slate-900 to-pink-500 px-5 py-3 font-bold text-white">
-                                            + Tambah ke Keranjang
-                                        </button>
-                                    </form>
-                                @endif
-
-                                @if ($produk->aktif && $wa)
-                                    <a
-                                        href="https://wa.me/{{ $wa }}?text={{ $pesan }}"
-                                        target="_blank"
-                                        class="block rounded-2xl bg-green-600 px-5 py-3 text-center font-bold text-white"
-                                    >
-                                        Hubungi Penjual via WhatsApp
-                                    </a>
-                                @elseif (! $produk->aktif)
-                                    <div class="rounded-2xl bg-red-50 px-5 py-4 font-semibold text-red-700">
-                                        Produk ini sudah terjual.
-                                    </div>
-                                @else
-                                    <div class="rounded-2xl bg-slate-100 px-5 py-4 font-semibold text-slate-600">
-                                        Penjual belum mengisi nomor WhatsApp.
-                                    </div>
-                                @endif
-                            @endif
-                        @else
-                            <a href="{{ route('login') }}" class="block rounded-2xl bg-gradient-to-r from-slate-900 to-pink-500 px-5 py-3 text-center font-bold text-white">
-                                Login untuk Menghubungi Penjual
+                    @if (auth()->id() === $produk->user_id)
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                            <a
+                                href="{{ route('produk.edit', $produk) }}"
+                                style="display:flex; align-items:center; justify-content:center; height:50px; border-radius:15px; background:#fbbf24; color:white; font-weight:900; text-decoration:none;"
+                            >
+                                Edit Produk
                             </a>
-                        @endauth
-                    </div>
+
+                            <form method="POST" action="{{ route('produk.destroy', $produk) }}" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
+                                @csrf
+                                @method('DELETE')
+
+                                <button
+                                    type="submit"
+                                    style="width:100%; height:50px; border:0; border-radius:15px; background:#ef4444; color:white; font-weight:900; cursor:pointer;"
+                                >
+                                    Hapus Produk
+                                </button>
+                            </form>
+                        </div>
+
+                        @if ($produk->aktif)
+                            <form method="POST" action="{{ route('produk.tandai-terjual', $produk) }}">
+                                @csrf
+
+                                <button
+                                    type="submit"
+                                    style="width:100%; height:50px; border:0; border-radius:15px; background:#111827; color:white; font-weight:900; cursor:pointer;"
+                                >
+                                    Tandai Terjual
+                                </button>
+                            </form>
+                        @else
+                            <form method="POST" action="{{ route('produk.tandai-tersedia', $produk) }}">
+                                @csrf
+
+                                <button
+                                    type="submit"
+                                    style="width:100%; height:50px; border:0; border-radius:15px; background:#16a34a; color:white; font-weight:900; cursor:pointer;"
+                                >
+                                    Tandai Tersedia
+                                </button>
+                            </form>
+                        @endif
+                    @endif
                 </div>
             </div>
         </div>
-    </section>
-@endsection
+    </div>
+</x-app-layout>

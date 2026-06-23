@@ -16,9 +16,9 @@
             min-height: 100vh;
             font-family: Arial, Helvetica, sans-serif;
             background:
-                radial-gradient(circle at top left, rgba(236, 72, 153, 0.22), transparent 35%),
-                radial-gradient(circle at bottom right, rgba(190, 24, 93, 0.20), transparent 35%),
-                #050505;
+                radial-gradient(circle at top left, rgba(236, 72, 153, 0.24), transparent 34%),
+                radial-gradient(circle at bottom right, rgba(219, 39, 119, 0.18), transparent 34%),
+                #050510;
             color: #ffffff;
         }
 
@@ -28,35 +28,48 @@
         }
 
         .container {
-            width: min(1120px, 92%);
+            width: min(1180px, 92%);
             margin: 0 auto;
         }
 
         .navbar {
-            padding: 24px 0;
+            padding: 28px 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 20px;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-weight: 800;
-            font-size: 24px;
-            letter-spacing: 0.5px;
+            gap: 14px;
         }
 
         .brand-logo {
-            width: 42px;
-            height: 42px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #ec4899, #be185d);
+            width: 54px;
+            height: 54px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #111827, #db2777);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 30px rgba(236, 72, 153, 0.45);
+            font-size: 27px;
+            font-weight: 900;
+            box-shadow: 0 16px 45px rgba(219, 39, 119, 0.35);
+        }
+
+        .brand-title {
+            font-size: 28px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .brand-subtitle {
+            margin-top: 5px;
+            color: #d1d5db;
+            font-size: 14px;
+            font-weight: 600;
         }
 
         .nav-actions {
@@ -70,76 +83,79 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 12px 18px;
+            min-height: 46px;
+            padding: 0 20px;
             border-radius: 999px;
-            font-weight: 700;
             font-size: 14px;
+            font-weight: 900;
             border: 1px solid rgba(255, 255, 255, 0.14);
             transition: 0.2s ease;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #ec4899, #be185d);
+            background: linear-gradient(135deg, #111827, #db2777);
             color: white;
-            box-shadow: 0 12px 35px rgba(236, 72, 153, 0.28);
+            box-shadow: 0 16px 38px rgba(219, 39, 119, 0.28);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 16px 45px rgba(236, 72, 153, 0.4);
+            box-shadow: 0 20px 48px rgba(219, 39, 119, 0.38);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.07);
+            background: rgba(255, 255, 255, 0.08);
             color: white;
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(14px);
         }
 
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.13);
         }
 
         .hero {
-            padding: 78px 0 64px;
+            padding: 72px 0 70px;
             display: grid;
             grid-template-columns: 1.1fr 0.9fr;
-            gap: 48px;
+            gap: 46px;
             align-items: center;
         }
 
         .badge {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 9px 14px;
+            padding: 10px 18px;
             border-radius: 999px;
+            background: rgba(236, 72, 153, 0.14);
             color: #f9a8d4;
-            background: rgba(236, 72, 153, 0.12);
-            border: 1px solid rgba(236, 72, 153, 0.28);
+            border: 1px solid rgba(236, 72, 153, 0.30);
             font-size: 14px;
-            font-weight: 700;
+            font-weight: 900;
+            letter-spacing: 1px;
             margin-bottom: 22px;
         }
 
         .hero h1 {
-            font-size: clamp(42px, 7vw, 76px);
-            line-height: 1.02;
+            max-width: 720px;
+            font-size: clamp(42px, 6.8vw, 78px);
+            line-height: 1.03;
             letter-spacing: -2px;
-            margin-bottom: 22px;
+            margin-bottom: 24px;
+            font-weight: 900;
         }
 
         .hero h1 span {
-            background: linear-gradient(135deg, #f9a8d4, #ec4899, #be185d);
+            background: linear-gradient(135deg, #f9a8d4, #ec4899, #db2777);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .hero p {
-            color: #d4d4d8;
+            max-width: 660px;
+            color: #d1d5db;
             font-size: 18px;
             line-height: 1.8;
-            max-width: 620px;
-            margin-bottom: 28px;
+            margin-bottom: 30px;
         }
 
         .hero-actions {
@@ -148,74 +164,69 @@
             flex-wrap: wrap;
         }
 
-        .preview-card {
-            background: rgba(20, 20, 20, 0.78);
-            border: 1px solid rgba(255, 255, 255, 0.10);
-            border-radius: 32px;
-            padding: 24px;
-            box-shadow: 0 28px 90px rgba(0, 0, 0, 0.45);
+        .hero-panel {
+            padding: 28px;
+            border-radius: 34px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 28px 90px rgba(0, 0, 0, 0.46);
             backdrop-filter: blur(18px);
         }
 
-        .product-card {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04));
-            border: 1px solid rgba(255, 255, 255, 0.10);
-            border-radius: 26px;
-            overflow: hidden;
-        }
-
-        .product-image {
-            height: 210px;
-            background:
-                linear-gradient(135deg, rgba(236, 72, 153, 0.75), rgba(15, 15, 15, 0.9)),
-                repeating-linear-gradient(45deg, rgba(255,255,255,0.12) 0 10px, transparent 10px 20px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 64px;
-        }
-
-        .product-body {
-            padding: 22px;
-        }
-
-        .product-body h3 {
-            font-size: 22px;
+        .panel-title {
+            font-size: 26px;
+            font-weight: 900;
             margin-bottom: 8px;
         }
 
-        .product-body p {
-            color: #d4d4d8;
-            line-height: 1.6;
-            margin-bottom: 16px;
+        .panel-desc {
+            color: #d1d5db;
+            line-height: 1.7;
+            font-size: 15px;
+            margin-bottom: 22px;
         }
 
-        .meta {
+        .flow-list {
+            display: grid;
+            gap: 14px;
+        }
+
+        .flow-item {
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 18px;
+            gap: 14px;
+            padding: 16px;
+            border-radius: 22px;
+            background: rgba(0, 0, 0, 0.26);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .pill {
-            padding: 7px 11px;
+        .flow-number {
+            width: 34px;
+            height: 34px;
             border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-            background: rgba(236, 72, 153, 0.15);
-            color: #f9a8d4;
-            border: 1px solid rgba(236, 72, 153, 0.25);
-        }
-
-        .price {
-            font-size: 26px;
+            background: #db2777;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
             font-weight: 900;
-            color: #ffffff;
-            margin-bottom: 16px;
         }
 
-        .features {
-            padding: 42px 0 84px;
+        .flow-item h3 {
+            font-size: 16px;
+            font-weight: 900;
+            margin-bottom: 5px;
+        }
+
+        .flow-item p {
+            color: #d1d5db;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .section {
+            padding: 30px 0 78px;
         }
 
         .section-title {
@@ -226,11 +237,15 @@
         .section-title h2 {
             font-size: clamp(30px, 4vw, 46px);
             margin-bottom: 12px;
+            font-weight: 900;
         }
 
         .section-title p {
-            color: #d4d4d8;
-            line-height: 1.7;
+            max-width: 760px;
+            margin: 0 auto;
+            color: #d1d5db;
+            line-height: 1.8;
+            font-size: 16px;
         }
 
         .feature-grid {
@@ -241,16 +256,17 @@
 
         .feature {
             padding: 24px;
-            border-radius: 24px;
-            background: rgba(255, 255, 255, 0.06);
+            border-radius: 26px;
+            background: rgba(255, 255, 255, 0.07);
             border: 1px solid rgba(255, 255, 255, 0.10);
+            min-height: 190px;
         }
 
         .feature-icon {
             width: 48px;
             height: 48px;
             border-radius: 16px;
-            background: rgba(236, 72, 153, 0.15);
+            background: rgba(236, 72, 153, 0.16);
             color: #f9a8d4;
             display: flex;
             align-items: center;
@@ -262,84 +278,64 @@
         .feature h3 {
             font-size: 19px;
             margin-bottom: 10px;
+            font-weight: 900;
         }
 
         .feature p {
-            color: #d4d4d8;
-            line-height: 1.7;
+            color: #d1d5db;
             font-size: 15px;
+            line-height: 1.7;
         }
 
-        .flow {
-            padding: 48px 0 88px;
+        .cta {
+            padding: 0 0 86px;
         }
 
-        .flow-box {
-            background: linear-gradient(135deg, rgba(236, 72, 153, 0.16), rgba(255, 255, 255, 0.05));
-            border: 1px solid rgba(236, 72, 153, 0.20);
-            border-radius: 32px;
-            padding: 34px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 18px;
-        }
-
-        .step {
-            padding: 18px;
-            border-radius: 22px;
-            background: rgba(0, 0, 0, 0.22);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .step-number {
-            width: 34px;
-            height: 34px;
-            border-radius: 999px;
-            background: #ec4899;
+        .cta-box {
+            padding: 36px;
+            border-radius: 34px;
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.20), rgba(255, 255, 255, 0.07));
+            border: 1px solid rgba(236, 72, 153, 0.22);
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .cta-box h2 {
+            font-size: 34px;
             font-weight: 900;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
-        .step h3 {
-            margin-bottom: 8px;
-            font-size: 17px;
-        }
-
-        .step p {
-            color: #d4d4d8;
-            line-height: 1.6;
-            font-size: 14px;
+        .cta-box p {
+            color: #d1d5db;
+            line-height: 1.7;
+            max-width: 680px;
         }
 
         .footer {
             padding: 28px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.10);
-            color: #a1a1aa;
             text-align: center;
+            color: #9ca3af;
+            border-top: 1px solid rgba(255, 255, 255, 0.10);
             font-size: 14px;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 980px) {
+            .navbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
             .hero {
                 grid-template-columns: 1fr;
-                padding-top: 44px;
+                padding-top: 42px;
             }
 
             .feature-grid {
                 grid-template-columns: 1fr;
-            }
-
-            .flow-box {
-                grid-template-columns: 1fr;
-            }
-
-            .navbar {
-                align-items: flex-start;
-                gap: 16px;
-                flex-direction: column;
             }
         }
     </style>
@@ -349,17 +345,19 @@
     <header class="container navbar">
         <a href="{{ url('/') }}" class="brand">
             <div class="brand-logo">U</div>
-            <div>UniMart</div>
+            <div>
+                <div class="brand-title">UniMart</div>
+                <div class="brand-subtitle">Campus Marketplace</div>
+            </div>
         </a>
 
         <nav class="nav-actions">
-            <a href="{{ url('/produk') }}" class="btn btn-secondary">Lihat Produk</a>
-
             @auth
                 @if(auth()->user()->is_admin)
                     <a href="{{ url('/admin') }}" class="btn btn-primary">Dashboard Admin</a>
                 @else
                     <a href="{{ url('/dashboard') }}" class="btn btn-secondary">Dashboard</a>
+                    <a href="{{ url('/produk') }}" class="btn btn-secondary">Lihat Produk</a>
                     <a href="{{ url('/produk/create') }}" class="btn btn-primary">Jual Barang</a>
                 @endif
             @else
@@ -372,68 +370,78 @@
     <main>
         <section class="container hero">
             <div>
-                <div class="badge">Marketplace kampus berbasis COD</div>
+                <div class="badge">Marketplace Kampus Berbasis COD</div>
 
                 <h1>
-                    Jual beli barang mahasiswa jadi lebih <span>mudah</span>.
+                    Jual beli barang antar mahasiswa jadi lebih <span>rapi</span>.
                 </h1>
 
                 <p>
-                    UniMart adalah campus marketplace untuk mahasiswa yang ingin menjual,
-                    mencari, menyimpan, dan membeli barang bekas atau baru di lingkungan kampus.
-                    Transaksi dilakukan dengan sistem COD, lalu pembeli dapat langsung
-                    menghubungi penjual melalui WhatsApp.
+                    UniMart adalah aplikasi web marketplace kampus untuk membantu mahasiswa menjual,
+                    mencari, dan membeli barang di lingkungan kampus. Sistem transaksi menggunakan COD,
+                    sedangkan komunikasi lanjutan dilakukan melalui WhatsApp.
                 </p>
 
                 <div class="hero-actions">
-                    <a href="{{ url('/produk') }}" class="btn btn-primary">Cari Produk Sekarang</a>
+                    <a href="{{ url('/produk') }}" class="btn btn-primary">Lihat Produk</a>
 
                     @auth
                         @if(!auth()->user()->is_admin)
                             <a href="{{ url('/produk/create') }}" class="btn btn-secondary">Mulai Jual Barang</a>
-                        @else
-                            <a href="{{ url('/admin') }}" class="btn btn-secondary">Kelola Admin</a>
                         @endif
                     @else
-                        <a href="{{ url('/register') }}" class="btn btn-secondary">Buat Akun Gratis</a>
+                        <a href="{{ url('/register') }}" class="btn btn-secondary">Buat Akun</a>
                     @endauth
                 </div>
             </div>
 
-            <div class="preview-card">
-                <div class="product-card">
-                    <div class="product-image">📚</div>
+            <div class="hero-panel">
+                <h2 class="panel-title">Alur UniMart</h2>
+                <p class="panel-desc">
+                    Landing page ini hanya menjelaskan konsep aplikasi. Data produk asli dikelola di dalam sistem setelah user login.
+                </p>
 
-                    <div class="product-body">
-                        <div class="meta">
-                            <span class="pill">Buku</span>
-                            <span class="pill">SAINTEK</span>
-                            <span class="pill">Tersedia</span>
+                <div class="flow-list">
+                    <div class="flow-item">
+                        <div class="flow-number">1</div>
+                        <div>
+                            <h3>Penjual Upload Produk</h3>
+                            <p>Mahasiswa menambahkan produk melalui menu Jual Barang.</p>
                         </div>
+                    </div>
 
-                        <h3>Buku Pemrograman Web 2 Laravel</h3>
+                    <div class="flow-item">
+                        <div class="flow-number">2</div>
+                        <div>
+                            <h3>Pembeli Cari Produk</h3>
+                            <p>Pembeli melihat produk milik user lain melalui halaman Produk.</p>
+                        </div>
+                    </div>
 
-                        <p>
-                            Contoh produk UniMart. Pembeli bisa melihat detail produk,
-                            menyimpan ke keranjang, lalu menghubungi penjual.
-                        </p>
+                    <div class="flow-item">
+                        <div class="flow-number">3</div>
+                        <div>
+                            <h3>Simpan ke Keranjang</h3>
+                            <p>Produk yang diminati dapat disimpan sebelum pembeli menghubungi penjual.</p>
+                        </div>
+                    </div>
 
-                        <div class="price">Rp80.000</div>
-
-                        <a href="{{ url('/produk') }}" class="btn btn-primary" style="width: 100%;">
-                            Lihat Detail Produk
-                        </a>
+                    <div class="flow-item">
+                        <div class="flow-number">4</div>
+                        <div>
+                            <h3>COD & WhatsApp</h3>
+                            <p>Pembeli dan penjual melakukan koordinasi waktu dan lokasi COD melalui WhatsApp.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="container features">
+        <section class="container section">
             <div class="section-title">
                 <h2>Fitur utama UniMart</h2>
                 <p>
-                    Fitur dibuat sesuai kebutuhan marketplace kampus sederhana:
-                    jual barang, cari produk, simpan minat, dan hubungi penjual.
+                    Fitur dibuat sederhana agar sesuai dengan kebutuhan marketplace kampus dan tetap mudah dijelaskan saat demo UAS.
                 </p>
             </div>
 
@@ -442,26 +450,23 @@
                     <div class="feature-icon">🛍️</div>
                     <h3>Jual Barang</h3>
                     <p>
-                        User biasa dapat menambahkan produk, mengedit detail produk,
-                        menghapus produk, dan menandai produk tersedia atau terjual.
+                        User dapat menambahkan produk, mengedit, menghapus, serta menandai produk tersedia atau terjual.
                     </p>
                 </div>
 
                 <div class="feature">
                     <div class="feature-icon">🔎</div>
-                    <h3>Search & Filter</h3>
+                    <h3>Cari & Filter Produk</h3>
                     <p>
-                        Produk dapat dicari berdasarkan kata kunci, kategori,
-                        dan fakultas seperti SAINTEK, FAI, FBBP, dan Fakultas Kesehatan.
+                        Produk dapat dicari berdasarkan kata kunci, kategori, dan fakultas agar pembeli lebih mudah menemukan barang.
                     </p>
                 </div>
 
                 <div class="feature">
                     <div class="feature-icon">🛒</div>
-                    <h3>Keranjang Minat</h3>
+                    <h3>Keranjang</h3>
                     <p>
-                        Keranjang digunakan untuk menyimpan produk yang diminati sebelum
-                        pembeli menghubungi penjual. Tidak ada pembayaran online.
+                        Keranjang dipakai untuk menyimpan produk yang diminati sebelum pembeli menghubungi penjual.
                     </p>
                 </div>
 
@@ -469,8 +474,7 @@
                     <div class="feature-icon">💬</div>
                     <h3>WhatsApp Penjual</h3>
                     <p>
-                        Pembeli dapat langsung menghubungi penjual melalui WhatsApp
-                        untuk menanyakan produk dan membuat janji COD.
+                        Pembeli dapat menghubungi penjual melalui WhatsApp untuk menanyakan barang dan membuat janji COD.
                     </p>
                 </div>
 
@@ -478,61 +482,36 @@
                     <div class="feature-icon">🤝</div>
                     <h3>COD Kampus</h3>
                     <p>
-                        Sistem transaksi UniMart menggunakan COD di lingkungan kampus,
-                        sehingga proses jual beli lebih sederhana dan aman untuk demo.
+                        Transaksi dilakukan secara COD di lingkungan kampus sehingga alur aplikasi tetap sederhana dan realistis.
                     </p>
                 </div>
 
                 <div class="feature">
                     <div class="feature-icon">🛡️</div>
-                    <h3>Panel Admin</h3>
+                    <h3>Admin Dashboard</h3>
                     <p>
-                        Admin memiliki dashboard untuk monitoring user, produk,
-                        produk tersedia, produk terjual, dan dapat menghapus produk.
+                        Admin dapat memantau user, produk, status produk, dan menjaga data marketplace tetap terkontrol.
                     </p>
                 </div>
             </div>
         </section>
 
-        <section class="container flow">
-            <div class="section-title">
-                <h2>Alur penggunaan</h2>
-                <p>
-                    UniMart dibuat agar alur demo UAS mudah dijelaskan dari sisi user biasa dan admin.
-                </p>
-            </div>
-
-            <div class="flow-box">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <h3>Register/Login</h3>
+        <section class="container cta">
+            <div class="cta-box">
+                <div>
+                    <h2>Mulai gunakan UniMart</h2>
                     <p>
-                        Mahasiswa membuat akun atau login menggunakan fitur authentication Laravel Breeze.
+                        Login untuk mengelola produk, melihat marketplace, menyimpan produk ke keranjang, dan melakukan transaksi COD.
                     </p>
                 </div>
 
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <h3>Upload Produk</h3>
-                    <p>
-                        Penjual mengisi nama produk, kategori, fakultas, harga, deskripsi, dan status.
-                    </p>
-                </div>
-
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <h3>Cari Produk</h3>
-                    <p>
-                        Pembeli mencari produk berdasarkan search, kategori, dan fakultas.
-                    </p>
-                </div>
-
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <h3>Hubungi & COD</h3>
-                    <p>
-                        Pembeli menghubungi penjual melalui WhatsApp lalu transaksi dilakukan secara COD.
-                    </p>
+                <div class="hero-actions">
+                    @auth
+                        <a href="{{ url('/dashboard') }}" class="btn btn-primary">Masuk Dashboard</a>
+                    @else
+                        <a href="{{ url('/login') }}" class="btn btn-secondary">Login</a>
+                        <a href="{{ url('/register') }}" class="btn btn-primary">Daftar</a>
+                    @endauth
                 </div>
             </div>
         </section>

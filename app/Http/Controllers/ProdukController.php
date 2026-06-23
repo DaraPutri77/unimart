@@ -6,6 +6,7 @@ use App\Models\Produk;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProdukController extends Controller
@@ -32,6 +33,10 @@ class ProdukController extends Controller
         $fakultas = $request->query('fakultas');
 
         $produks = Produk::with('user')
+            ->where('aktif', true)
+            ->when(Auth::check(), function ($query) {
+                $query->where('user_id', '!=', Auth::id());
+            })
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('nama', 'like', '%' . $search . '%')
@@ -63,6 +68,45 @@ class ProdukController extends Controller
         ));
     }
 
+    public function produkSaya(Request $request): View
+    {
+        $search = $request->query('search');
+        $kategori = $request->query('kategori');
+        $fakultas = $request->query('fakultas');
+
+        $produks = Produk::with('user')
+            ->where('user_id', Auth::id())
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('nama', 'like', '%' . $search . '%')
+                        ->orWhere('kategori', 'like', '%' . $search . '%')
+                        ->orWhere('fakultas', 'like', '%' . $search . '%')
+                        ->orWhere('deskripsi', 'like', '%' . $search . '%');
+                });
+            })
+            ->when($kategori, function ($query) use ($kategori) {
+                $query->where('kategori', $kategori);
+            })
+            ->when($fakultas, function ($query) use ($fakultas) {
+                $query->where('fakultas', $fakultas);
+            })
+            ->latest()
+            ->paginate(6)
+            ->withQueryString();
+
+        $kategoriList = $this->kategoriList;
+        $fakultasList = $this->fakultasList;
+
+        return view('produk.saya', compact(
+            'produks',
+            'kategoriList',
+            'fakultasList',
+            'search',
+            'kategori',
+            'fakultas'
+        ));
+    }
+
     public function create(): View
     {
         $kategoriList = $this->kategoriList;
@@ -80,16 +124,33 @@ class ProdukController extends Controller
             'kategori' => ['required', 'string', 'in:Elektronik,Aksesori,Buku,Fashion,Lainnya'],
             'fakultas' => ['required', 'string', 'in:SAINTEK,FAI,FBBP,Fakultas Kesehatan'],
             'deskripsi' => ['nullable', 'string'],
+            'gambar' => ['nullable', 'file', 'max:4096'],
+        ], [
+            'gambar.file' => 'File gambar tidak valid.',
+            'gambar.max' => 'Ukuran gambar maksimal 4 MB.',
         ]);
 
-        $validated['user_id'] = Auth::id();
-        $validated['aktif'] = true;
+        $gambarPath = null;
 
-        Produk::create($validated);
+        if ($request->hasFile('gambar') && $request->file('gambar')->isValid()) {
+            $gambarPath = $request->file('gambar')->store('produk', 'public');
+        }
+
+        Produk::create([
+            'user_id' => Auth::id(),
+            'nama' => $validated['nama'],
+            'harga' => $validated['harga'],
+            'stok' => $validated['stok'],
+            'kategori' => $validated['kategori'],
+            'fakultas' => $validated['fakultas'],
+            'deskripsi' => $validated['deskripsi'] ?? null,
+            'gambar' => $gambarPath,
+            'aktif' => true,
+        ]);
 
         return redirect()
-            ->route('produk.index')
-            ->with('success', 'Produk berhasil ditambahkan.');
+            ->route('produk.saya')
+            ->with('success', 'Produk berhasil ditambahkan dan masuk ke Produk Saya.');
     }
 
     public function show(Produk $produk): View
@@ -120,9 +181,31 @@ class ProdukController extends Controller
             'kategori' => ['required', 'string', 'in:Elektronik,Aksesori,Buku,Fashion,Lainnya'],
             'fakultas' => ['required', 'string', 'in:SAINTEK,FAI,FBBP,Fakultas Kesehatan'],
             'deskripsi' => ['nullable', 'string'],
+            'gambar' => ['nullable', 'file', 'max:4096'],
+        ], [
+            'gambar.file' => 'File gambar tidak valid.',
+            'gambar.max' => 'Ukuran gambar maksimal 4 MB.',
         ]);
 
-        $produk->update($validated);
+        $gambarPath = $produk->gambar;
+
+        if ($request->hasFile('gambar') && $request->file('gambar')->isValid()) {
+            if ($produk->gambar && Storage::disk('public')->exists($produk->gambar)) {
+                Storage::disk('public')->delete($produk->gambar);
+            }
+
+            $gambarPath = $request->file('gambar')->store('produk', 'public');
+        }
+
+        $produk->update([
+            'nama' => $validated['nama'],
+            'harga' => $validated['harga'],
+            'stok' => $validated['stok'],
+            'kategori' => $validated['kategori'],
+            'fakultas' => $validated['fakultas'],
+            'deskripsi' => $validated['deskripsi'] ?? null,
+            'gambar' => $gambarPath,
+        ]);
 
         return redirect()
             ->route('produk.show', $produk)
@@ -133,10 +216,14 @@ class ProdukController extends Controller
     {
         $this->authorizeOwner($produk);
 
+        if ($produk->gambar && Storage::disk('public')->exists($produk->gambar)) {
+            Storage::disk('public')->delete($produk->gambar);
+        }
+
         $produk->delete();
 
         return redirect()
-            ->route('produk.index')
+            ->route('produk.saya')
             ->with('success', 'Produk berhasil dihapus.');
     }
 
@@ -149,7 +236,7 @@ class ProdukController extends Controller
         ]);
 
         return redirect()
-            ->route('produk.show', $produk)
+            ->route('produk.saya')
             ->with('success', 'Produk berhasil ditandai terjual.');
     }
 
@@ -162,7 +249,7 @@ class ProdukController extends Controller
         ]);
 
         return redirect()
-            ->route('produk.show', $produk)
+            ->route('produk.saya')
             ->with('success', 'Produk berhasil ditandai tersedia.');
     }
 
