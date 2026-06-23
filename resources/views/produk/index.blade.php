@@ -105,9 +105,9 @@
                     @foreach ($produks as $produk)
                         <div style="background:white; border-radius:22px; overflow:hidden; box-shadow:0 10px 26px rgba(15,23,42,0.05); border:1px solid #f3e8ef;">
                             <div style="height:145px; background:#f8fafc; display:flex; align-items:center; justify-content:center; padding:12px; border-bottom:1px solid #f1f5f9;">
-                                @if ($produk->gambar)
+                                @if ($produk->gambar_url)
                                     <img
-                                        src="{{ asset('storage/' . $produk->gambar) }}"
+                                        src="{{ $produk->gambar_url }}"
                                         alt="{{ $produk->nama }}"
                                         style="max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; display:block;"
                                     >

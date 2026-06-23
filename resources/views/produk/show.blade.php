@@ -36,9 +36,9 @@
             <div style="display:grid; grid-template-columns:0.95fr 1.05fr; gap:28px; align-items:start;">
                 <div style="display:grid; gap:20px;">
                     <div style="background:white; border-radius:28px; padding:22px; box-shadow:0 18px 45px rgba(15,23,42,0.06);">
-                        @if ($produk->gambar)
+                        @if ($produk->gambar_url)
                             <img
-                                src="{{ asset('storage/' . $produk->gambar) }}"
+                                src="{{ $produk->gambar_url }}"
                                 alt="{{ $produk->nama }}"
                                 style="width:100%; max-height:380px; object-fit:contain; border-radius:22px; border:1px solid #e2e8f0; background:#f8fafc;"
                             >
