@@ -9,13 +9,16 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory;
+    use Notifiable;
 
     protected $fillable = [
         'name',
         'email',
-        'whatsapp',
         'password',
+        'whatsapp',
+        'foto_profil',
+        'bio',
         'is_admin',
     ];
 
