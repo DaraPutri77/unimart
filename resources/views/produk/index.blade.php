@@ -1,42 +1,62 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <div>
+            <p style="margin:0 0 8px; color:#db2777; font-size:13px; font-weight:900; letter-spacing:6px;">
+                MARKETPLACE
+            </p>
 
-@section('content')
-    <section class="bg-gradient-to-br from-rose-50 via-white to-pink-50 py-10">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 style="font-size:28px; font-weight:900; color:#0f172a; margin:0;">
+                Daftar Produk
+            </h2>
+
+            <p style="margin:6px 0 0; color:#64748b; font-size:15px;">
+                Temukan produk yang dijual mahasiswa lain di UniMart.
+            </p>
+        </div>
+    </x-slot>
+
+    <div style="padding:28px 20px; background:#fff7fb; min-height:calc(100vh - 120px);">
+        <div style="max-width:1180px; margin:0 auto;">
             @if (session('success'))
-                <div class="mb-6 rounded-2xl bg-green-100 px-5 py-4 font-semibold text-green-700">
+                <div style="margin-bottom:18px; padding:13px 16px; border-radius:14px; background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; font-weight:800;">
                     {{ session('success') }}
                 </div>
             @endif
 
-            <div class="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                    <p class="text-sm font-black uppercase tracking-[0.3em] text-pink-500">
-                        Marketplace
-                    </p>
-
-                    <h1 class="mt-2 text-4xl font-black text-slate-900">
-                        Daftar Produk
-                    </h1>
-
-                    <p class="mt-2 text-slate-600">
-                        Total: {{ $produks->total() }} produk
-                    </p>
+            @if (session('error'))
+                <div style="margin-bottom:18px; padding:13px 16px; border-radius:14px; background:#fff1f2; color:#be123c; border:1px solid #fecdd3; font-weight:800;">
+                    {{ session('error') }}
                 </div>
+            @endif
 
-                <div class="w-full lg:max-w-4xl">
-                    <form method="GET" action="{{ route('produk.index') }}" class="grid gap-3 md:grid-cols-[1fr_170px_190px_110px]">
+            <form
+                method="GET"
+                action="{{ route('produk.index') }}"
+                style="margin-bottom:22px; background:white; padding:16px; border-radius:20px; box-shadow:0 10px 26px rgba(15,23,42,0.05);"
+            >
+                <div style="display:grid; grid-template-columns:2fr 1fr 1fr auto; gap:12px; align-items:end;">
+                    <div>
+                        <label style="display:block; margin-bottom:7px; font-weight:900; color:#0f172a; font-size:14px;">
+                            Cari Produk
+                        </label>
+
                         <input
                             type="text"
                             name="search"
                             value="{{ $search }}"
                             placeholder="Cari produk..."
-                            class="rounded-2xl border border-slate-200 px-4 py-3 focus:border-pink-500 focus:ring-pink-500"
+                            style="width:100%; height:44px; border:1px solid #e2e8f0; border-radius:12px; padding:0 13px; outline:none; font-size:14px;"
                         >
+                    </div>
+
+                    <div>
+                        <label style="display:block; margin-bottom:7px; font-weight:900; color:#0f172a; font-size:14px;">
+                            Kategori
+                        </label>
 
                         <select
                             name="kategori"
-                            class="rounded-2xl border border-slate-200 px-4 py-3 focus:border-pink-500 focus:ring-pink-500"
+                            style="width:100%; height:44px; border:1px solid #e2e8f0; border-radius:12px; padding:0 13px; outline:none; font-size:14px;"
                         >
                             <option value="">Semua Kategori</option>
 
@@ -46,10 +66,16 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <div>
+                        <label style="display:block; margin-bottom:7px; font-weight:900; color:#0f172a; font-size:14px;">
+                            Fakultas
+                        </label>
 
                         <select
                             name="fakultas"
-                            class="rounded-2xl border border-slate-200 px-4 py-3 focus:border-pink-500 focus:ring-pink-500"
+                            style="width:100%; height:44px; border:1px solid #e2e8f0; border-radius:12px; padding:0 13px; outline:none; font-size:14px;"
                         >
                             <option value="">Semua Fakultas</option>
 
@@ -59,126 +85,117 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>
 
-                        <button class="rounded-2xl bg-slate-900 px-5 py-3 font-bold text-white transition hover:bg-pink-600">
-                            Cari
-                        </button>
-                    </form>
-
-                    @auth
-                        <a href="{{ route('produk.create') }}" class="mt-3 block rounded-2xl bg-gradient-to-r from-slate-900 to-pink-500 px-5 py-3 text-center font-bold text-white shadow-lg shadow-pink-100">
-                            + Tambah Produk
-                        </a>
-                    @else
-                        <a href="{{ route('login') }}" class="mt-3 block rounded-2xl bg-gradient-to-r from-slate-900 to-pink-500 px-5 py-3 text-center font-bold text-white shadow-lg shadow-pink-100">
-                            Login untuk Jual Barang
-                        </a>
-                    @endauth
+                    <button
+                        type="submit"
+                        style="height:44px; padding:0 20px; border:0; border-radius:12px; background:#111827; color:white; font-weight:900; cursor:pointer; font-size:14px;"
+                    >
+                        Cari
+                    </button>
                 </div>
+            </form>
+
+            <div style="margin-bottom:18px; color:#64748b; font-size:15px; font-weight:700;">
+                Total: {{ $produks->total() }} produk
             </div>
 
-            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                @forelse ($produks as $produk)
-                    <article class="flex min-h-[390px] flex-col rounded-[28px] bg-white p-6 shadow-xl shadow-rose-100/70">
-                        <div class="mb-5 flex flex-wrap items-center justify-between gap-2">
-                            <div class="flex flex-wrap gap-2">
-                                <span class="rounded-full bg-pink-100 px-4 py-2 text-xs font-black text-pink-700">
-                                    {{ $produk->kategori }}
-                                </span>
-
-                                <span class="rounded-full bg-slate-100 px-4 py-2 text-xs font-black text-slate-700">
-                                    {{ $produk->fakultas }}
-                                </span>
+            @if ($produks->count())
+                <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:18px;">
+                    @foreach ($produks as $produk)
+                        <div style="background:white; border-radius:22px; overflow:hidden; box-shadow:0 10px 26px rgba(15,23,42,0.05); border:1px solid #f3e8ef;">
+                            <div style="height:145px; background:#f8fafc; display:flex; align-items:center; justify-content:center; padding:12px; border-bottom:1px solid #f1f5f9;">
+                                @if ($produk->gambar)
+                                    <img
+                                        src="{{ asset('storage/' . $produk->gambar) }}"
+                                        alt="{{ $produk->nama }}"
+                                        style="max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; display:block;"
+                                    >
+                                @else
+                                    <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#111827,#db2777); border-radius:16px; color:white; font-size:46px;">
+                                        🛍️
+                                    </div>
+                                @endif
                             </div>
 
-                            @if ($produk->aktif)
-                                <span class="rounded-full bg-green-100 px-4 py-2 text-xs font-black text-green-700">
-                                    Tersedia
-                                </span>
-                            @else
-                                <span class="rounded-full bg-red-100 px-4 py-2 text-xs font-black text-red-700">
-                                    Terjual
-                                </span>
-                            @endif
+                            <div style="padding:16px;">
+                                <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+                                    <div style="display:flex; gap:7px; flex-wrap:wrap;">
+                                        <span style="padding:6px 10px; border-radius:999px; background:#fce7f3; color:#be185d; font-size:11px; font-weight:900;">
+                                            {{ $produk->kategori }}
+                                        </span>
+
+                                        <span style="padding:6px 10px; border-radius:999px; background:#f1f5f9; color:#334155; font-size:11px; font-weight:900;">
+                                            {{ $produk->fakultas }}
+                                        </span>
+                                    </div>
+
+                                    @if ($produk->aktif)
+                                        <span style="padding:6px 10px; border-radius:999px; background:#dcfce7; color:#15803d; font-size:11px; font-weight:900;">
+                                            Tersedia
+                                        </span>
+                                    @else
+                                        <span style="padding:6px 10px; border-radius:999px; background:#fee2e2; color:#b91c1c; font-size:11px; font-weight:900;">
+                                            Terjual
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <h3 style="margin:0 0 8px; font-size:18px; font-weight:900; color:#0f172a; line-height:1.35;">
+                                    {{ $produk->nama }}
+                                </h3>
+
+                                <div style="margin-bottom:12px; font-size:24px; font-weight:900; color:#db2777;">
+                                    Rp {{ number_format($produk->harga, 0, ',', '.') }}
+                                </div>
+
+                                <div style="display:grid; gap:5px; margin-bottom:16px; color:#334155; font-size:13px;">
+                                    <div>
+                                        Stok:
+                                        <strong style="color:#0f172a;">{{ $produk->stok }}</strong>
+                                    </div>
+
+                                    <div>
+                                        Fakultas:
+                                        <strong style="color:#0f172a;">{{ $produk->fakultas }}</strong>
+                                    </div>
+
+                                    <div>
+                                        Penjual:
+                                        <strong style="color:#0f172a;">{{ $produk->user->name ?? '-' }}</strong>
+                                    </div>
+
+                                    <div>
+                                        WhatsApp:
+                                        <strong style="color:#0f172a;">{{ $produk->user->whatsapp ?? '-' }}</strong>
+                                    </div>
+                                </div>
+
+                                <a
+                                    href="{{ route('produk.show', $produk) }}"
+                                    style="display:flex; align-items:center; justify-content:center; height:40px; border-radius:11px; background:#111827; color:white; font-weight:900; text-decoration:none; font-size:13px;"
+                                >
+                                    Detail
+                                </a>
+                            </div>
                         </div>
+                    @endforeach
+                </div>
 
-                        <h2 class="text-xl font-black text-slate-900">
-                            {{ $produk->nama }}
-                        </h2>
+                <div style="margin-top:24px;">
+                    {{ $produks->links() }}
+                </div>
+            @else
+                <div style="background:white; border-radius:22px; padding:34px; text-align:center; box-shadow:0 10px 26px rgba(15,23,42,0.05);">
+                    <h3 style="margin:0 0 12px; font-size:23px; font-weight:900; color:#0f172a;">
+                        Belum ada produk yang bisa ditampilkan.
+                    </h3>
 
-                        <p class="mt-4 text-3xl font-black text-pink-600">
-                            Rp {{ number_format($produk->harga, 0, ',', '.') }}
-                        </p>
-
-                        <div class="mt-4 space-y-1 text-sm text-slate-600">
-                            <p>
-                                Stok:
-                                <span class="font-bold text-slate-800">
-                                    {{ $produk->stok }}
-                                </span>
-                            </p>
-
-                            <p>
-                                Fakultas:
-                                <span class="font-bold text-slate-800">
-                                    {{ $produk->fakultas }}
-                                </span>
-                            </p>
-
-                            <p>
-                                Penjual:
-                                <span class="font-bold text-slate-800">
-                                    {{ $produk->user->name ?? '-' }}
-                                </span>
-                            </p>
-
-                            <p>
-                                WhatsApp:
-                                <span class="font-bold text-slate-800">
-                                    {{ $produk->user->whatsapp ?? 'Belum diisi' }}
-                                </span>
-                            </p>
-                        </div>
-
-                        <div class="mt-auto grid gap-3 pt-6 {{ auth()->id() === $produk->user_id ? 'grid-cols-3' : 'grid-cols-1' }}">
-                            <a href="{{ route('produk.show', $produk) }}" class="rounded-2xl bg-slate-900 px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-pink-600">
-                                Detail
-                            </a>
-
-                            @auth
-                                @if (auth()->id() === $produk->user_id)
-                                    <a href="{{ route('produk.edit', $produk) }}" class="rounded-2xl bg-amber-400 px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-amber-500">
-                                        Edit
-                                    </a>
-
-                                    <form method="POST" action="{{ route('produk.destroy', $produk) }}" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <button class="w-full rounded-2xl bg-red-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-red-600">
-                                            Hapus
-                                        </button>
-                                    </form>
-                                @endif
-                            @endauth
-                        </div>
-                    </article>
-                @empty
-                    <div class="col-span-full rounded-[28px] bg-white p-10 text-center shadow-xl shadow-rose-100">
-                        <h2 class="text-2xl font-black text-slate-900">
-                            Produk belum ada.
-                        </h2>
-
-                        <p class="mt-2 text-slate-600">
-                            Jadilah penjual pertama di UniMart.
-                        </p>
-                    </div>
-                @endforelse
-            </div>
-
-            <div class="mt-8">
-                {{ $produks->links() }}
-            </div>
+                    <p style="margin:0; color:#64748b; font-size:15px;">
+                        Produk milikmu sendiri tidak tampil di halaman Produk. Produkmu ada di menu Produk Saya.
+                    </p>
+                </div>
+            @endif
         </div>
-    </section>
-@endsection
+    </div>
+</x-app-layout>
