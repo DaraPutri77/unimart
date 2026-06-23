@@ -34,9 +34,7 @@ class ProdukController extends Controller
 
         $produks = Produk::with('user')
             ->where('aktif', true)
-            ->when(Auth::check(), function ($query) {
-                $query->where('user_id', '!=', Auth::id());
-            })
+            ->where('user_id', '!=', Auth::id())
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('nama', 'like', '%' . $search . '%')
@@ -125,9 +123,6 @@ class ProdukController extends Controller
             'fakultas' => ['required', 'string', 'in:SAINTEK,FAI,FBBP,Fakultas Kesehatan'],
             'deskripsi' => ['nullable', 'string'],
             'gambar' => ['nullable', 'file', 'max:4096'],
-        ], [
-            'gambar.file' => 'File gambar tidak valid.',
-            'gambar.max' => 'Ukuran gambar maksimal 4 MB.',
         ]);
 
         $gambarPath = null;
@@ -182,9 +177,6 @@ class ProdukController extends Controller
             'fakultas' => ['required', 'string', 'in:SAINTEK,FAI,FBBP,Fakultas Kesehatan'],
             'deskripsi' => ['nullable', 'string'],
             'gambar' => ['nullable', 'file', 'max:4096'],
-        ], [
-            'gambar.file' => 'File gambar tidak valid.',
-            'gambar.max' => 'Ukuran gambar maksimal 4 MB.',
         ]);
 
         $gambarPath = $produk->gambar;
