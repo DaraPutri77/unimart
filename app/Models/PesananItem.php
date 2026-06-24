@@ -6,40 +6,32 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Keranjang extends Model
+class PesananItem extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
+        'pesanan_id',
         'produk_id',
+        'nama_produk',
+        'harga',
         'jumlah',
-    ];
-
-    protected $casts = [
-        'jumlah' => 'integer',
-    ];
-
-    protected $appends = [
         'subtotal',
     ];
 
-    public function user(): BelongsTo
+    protected $casts = [
+        'harga' => 'integer',
+        'jumlah' => 'integer',
+        'subtotal' => 'integer',
+    ];
+
+    public function pesanan(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Pesanan::class);
     }
 
     public function produk(): BelongsTo
     {
         return $this->belongsTo(Produk::class);
-    }
-
-    public function getSubtotalAttribute(): int
-    {
-        if (! $this->produk) {
-            return 0;
-        }
-
-        return (int) $this->produk->harga * (int) $this->jumlah;
     }
 }
