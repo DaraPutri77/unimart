@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\BuyerPesananController;
 use App\Http\Controllers\KeranjangController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SellerPesananController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -14,59 +16,165 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+/*
+|--------------------------------------------------------------------------
+| USER ROUTES
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->group(function () {
     /*
     |--------------------------------------------------------------------------
-    | Profile
+    | PROFILE
     |--------------------------------------------------------------------------
     */
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Produk Saya
-    |--------------------------------------------------------------------------
-    | Halaman khusus untuk melihat dan mengelola produk milik user login.
-    */
-    Route::get('/produk-saya', [ProdukController::class, 'produkSaya'])->name('produk.saya');
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Produk
-    |--------------------------------------------------------------------------
-    | /produk dipakai sebagai marketplace untuk melihat produk milik orang lain.
-    */
-    Route::post('/produk/{produk}/tandai-terjual', [ProdukController::class, 'tandaiTerjual'])
-        ->name('produk.tandai-terjual');
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
 
-    Route::post('/produk/{produk}/tandai-tersedia', [ProdukController::class, 'tandaiTersedia'])
-        ->name('produk.tandai-tersedia');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
 
-    Route::resource('produk', ProdukController::class);
 
     /*
     |--------------------------------------------------------------------------
-    | Keranjang
+    | PRODUK
     |--------------------------------------------------------------------------
-    | Keranjang hanya untuk menyimpan produk yang diminati sebelum hubungi WhatsApp.
     */
-    Route::get('/keranjang', [KeranjangController::class, 'index'])->name('keranjang.index');
-    Route::post('/keranjang/{produk}', [KeranjangController::class, 'store'])->name('keranjang.store');
-    Route::delete('/keranjang/{keranjang}', [KeranjangController::class, 'destroy'])->name('keranjang.destroy');
+
+    Route::get('/produk', [ProdukController::class, 'index'])
+        ->name('produk.index');
+
+    Route::get('/produk-saya', [ProdukController::class, 'produkSaya'])
+        ->name('produk.saya');
+
+    Route::get('/produk/tambah', [ProdukController::class, 'create'])
+        ->name('produk.create');
+
+    Route::post('/produk', [ProdukController::class, 'store'])
+        ->name('produk.store');
+
+    Route::get('/produk/{produk}', [ProdukController::class, 'show'])
+        ->whereNumber('produk')
+        ->name('produk.show');
+
+    Route::get('/produk/{produk}/edit', [ProdukController::class, 'edit'])
+        ->whereNumber('produk')
+        ->name('produk.edit');
+
+    Route::put('/produk/{produk}', [ProdukController::class, 'update'])
+        ->whereNumber('produk')
+        ->name('produk.update');
+
+    Route::patch('/produk/{produk}', [ProdukController::class, 'update'])
+        ->whereNumber('produk')
+        ->name('produk.patch');
+
+    Route::delete('/produk/{produk}', [ProdukController::class, 'destroy'])
+        ->whereNumber('produk')
+        ->name('produk.destroy');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | KERANJANG
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/keranjang', [KeranjangController::class, 'index'])
+        ->name('keranjang.index');
+
+    Route::post('/keranjang/tambah/{produk}', [KeranjangController::class, 'store'])
+        ->whereNumber('produk')
+        ->name('keranjang.tambah');
+
+    Route::post('/keranjang/{produk}', [KeranjangController::class, 'store'])
+        ->whereNumber('produk')
+        ->name('keranjang.store');
+
+    Route::patch('/keranjang/{keranjang}', [KeranjangController::class, 'update'])
+        ->whereNumber('keranjang')
+        ->name('keranjang.update');
+
+    Route::delete('/keranjang/{keranjang}', [KeranjangController::class, 'destroy'])
+        ->whereNumber('keranjang')
+        ->name('keranjang.destroy');
+
+    Route::delete('/keranjang', [KeranjangController::class, 'clear'])
+        ->name('keranjang.clear');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CHECKOUT COD
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/checkout', [BuyerPesananController::class, 'checkout'])
+        ->name('checkout.store');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PESANAN SAYA - BUYER
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/pesanan-saya', [BuyerPesananController::class, 'index'])
+        ->name('pesanan.saya');
+
+    Route::get('/pesanan-saya/{pesanan}', [BuyerPesananController::class, 'show'])
+        ->whereNumber('pesanan')
+        ->name('pesanan.saya.show');
+
+    Route::patch('/pesanan-saya/{pesanan}/batalkan', [BuyerPesananController::class, 'cancel'])
+        ->whereNumber('pesanan')
+        ->name('pesanan.cancel');
+
+    Route::patch('/pesanan-saya/{pesanan}/selesai', [BuyerPesananController::class, 'complete'])
+        ->whereNumber('pesanan')
+        ->name('pesanan.complete');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PESANAN MASUK - SELLER
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/pesanan-masuk', [SellerPesananController::class, 'index'])
+        ->name('pesanan.masuk');
+
+    Route::get('/pesanan-masuk/{pesanan}', [SellerPesananController::class, 'show'])
+        ->whereNumber('pesanan')
+        ->name('pesanan.masuk.show');
+
+    Route::patch('/pesanan-masuk/{pesanan}/setujui', [SellerPesananController::class, 'accept'])
+        ->whereNumber('pesanan')
+        ->name('pesanan.accept');
+
+    Route::patch('/pesanan-masuk/{pesanan}/tolak', [SellerPesananController::class, 'reject'])
+        ->whereNumber('pesanan')
+        ->name('pesanan.reject');
 });
+
 
 /*
 |--------------------------------------------------------------------------
-| Admin
+| ADMIN ROUTES
 |--------------------------------------------------------------------------
 */
+
 Route::middleware(['auth', 'is_admin'])->group(function () {
-    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::get('/admin', [AdminController::class, 'index'])
+        ->name('admin.dashboard');
 
     Route::delete('/admin/produk/{produk}', [AdminController::class, 'destroyProduk'])
+        ->whereNumber('produk')
         ->name('admin.produk.destroy');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

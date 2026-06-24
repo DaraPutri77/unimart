@@ -1,257 +1,109 @@
-<nav class="unimart-navbar">
-    <div class="unimart-nav-container">
-        <div class="unimart-brand-area">
-            <a href="{{ route('home') }}" class="unimart-brand">
-                <x-application-logo />
-
-                <div>
-                    <div class="unimart-brand-title">UniMart</div>
-                    <div class="unimart-brand-subtitle">Campus Marketplace</div>
+<nav class="border-b border-pink-100 bg-white shadow-sm">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex min-h-20 items-center justify-between gap-6">
+            <a href="{{ url('/') }}" class="flex items-center gap-3">
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-700 to-slate-900 text-2xl font-extrabold text-white shadow-lg shadow-pink-200">
+                    U
                 </div>
-            </a>
-        </div>
-
-        <div class="unimart-menu">
-            <a
-                href="{{ route('home') }}"
-                class="unimart-link {{ request()->routeIs('home') ? 'active' : '' }}"
-            >
-                Home
+                <div>
+                    <div class="text-2xl font-extrabold text-slate-900">UniMart</div>
+                    <div class="text-sm font-semibold text-slate-500">Campus Marketplace</div>
+                </div>
             </a>
 
             @auth
-                @if(auth()->user()->is_admin)
-                    <a
-                        href="{{ route('admin.index') }}"
-                        class="unimart-link {{ request()->routeIs('admin.index') ? 'active' : '' }}"
-                    >
-                        Dashboard Admin
-                    </a>
+                @php
+                    $isAdmin = (bool) auth()->user()->is_admin;
 
-                    <a
-                        href="{{ route('produk.index') }}"
-                        class="unimart-link {{ request()->routeIs('produk.index') || request()->routeIs('produk.show') ? 'active' : '' }}"
-                    >
-                        Produk
-                    </a>
+                    $linkClass = function ($active = false) {
+                        return $active
+                            ? 'rounded-2xl bg-pink-100 px-4 py-3 text-sm font-extrabold text-pink-700'
+                            : 'rounded-2xl px-4 py-3 text-sm font-extrabold text-slate-600 hover:bg-pink-50 hover:text-pink-700';
+                    };
+                @endphp
 
-                    <a
-                        href="{{ route('profile.edit') }}"
-                        class="unimart-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}"
-                    >
-                        Profil
-                    </a>
-                @else
-                    <a
-                        href="{{ route('dashboard') }}"
-                        class="unimart-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
-                    >
+                <div class="hidden items-center gap-1 lg:flex">
+                    <a href="{{ route('dashboard') }}" class="{{ $linkClass(request()->routeIs('dashboard')) }}">
                         Dashboard
                     </a>
 
-                    <a
-                        href="{{ route('produk.index') }}"
-                        class="unimart-link {{ request()->routeIs('produk.index') ? 'active' : '' }}"
-                    >
-                        Produk
-                    </a>
+                    @if ($isAdmin)
+                        @if (Route::has('admin.dashboard'))
+                            <a href="{{ route('admin.dashboard') }}" class="{{ $linkClass(request()->routeIs('admin.*')) }}">
+                                Admin
+                            </a>
+                        @endif
 
-                    <a
-                        href="{{ route('produk.saya') }}"
-                        class="unimart-link {{ request()->routeIs('produk.saya') || request()->routeIs('produk.create') || request()->routeIs('produk.edit') ? 'active' : '' }}"
-                    >
-                        Produk Saya
-                    </a>
+                        <a href="{{ route('produk.index') }}" class="{{ $linkClass(request()->routeIs('produk.index') || request()->routeIs('produk.show')) }}">
+                            Produk
+                        </a>
+                    @else
+                        <a href="{{ route('produk.index') }}" class="{{ $linkClass(request()->routeIs('produk.index') || request()->routeIs('produk.show')) }}">
+                            Produk
+                        </a>
 
-                    <a
-                        href="{{ route('keranjang.index') }}"
-                        class="unimart-link {{ request()->routeIs('keranjang.index') ? 'active' : '' }}"
-                    >
-                        Keranjang
-                    </a>
+                        <a href="{{ route('produk.saya') }}" class="{{ $linkClass(request()->routeIs('produk.saya') || request()->routeIs('produk.create') || request()->routeIs('produk.edit')) }}">
+                            Produk Saya
+                        </a>
 
-                    <a
-                        href="{{ route('profile.edit') }}"
-                        class="unimart-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}"
-                    >
+                        <a href="{{ route('keranjang.index') }}" class="{{ $linkClass(request()->routeIs('keranjang.*')) }}">
+                            Keranjang
+                        </a>
+
+                        <a href="{{ route('pesanan.saya') }}" class="{{ $linkClass(request()->routeIs('pesanan.saya') || request()->routeIs('pesanan.saya.show')) }}">
+                            Pesanan Saya
+                        </a>
+
+                        <a href="{{ route('pesanan.masuk') }}" class="{{ $linkClass(request()->routeIs('pesanan.masuk') || request()->routeIs('pesanan.masuk.show')) }}">
+                            Pesanan Masuk
+                        </a>
+                    @endif
+
+                    <a href="{{ route('profile.edit') }}" class="{{ $linkClass(request()->routeIs('profile.edit')) }}">
                         Profil
                     </a>
-                @endif
+                </div>
 
-                <span class="unimart-user-name">
-                    Halo, {{ auth()->user()->name }}
-                </span>
+                <div class="flex items-center gap-3">
+                    <div class="hidden text-right xl:block">
+                        <div class="text-sm font-bold text-slate-900">Halo, {{ auth()->user()->name }}</div>
+                        <div class="text-xs font-semibold text-slate-500">{{ auth()->user()->email }}</div>
+                    </div>
 
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-
-                    <button type="submit" class="unimart-logout">
-                        Logout
-                    </button>
-                </form>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                                class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-extrabold text-white hover:bg-pink-700">
+                            Logout
+                        </button>
+                    </form>
+                </div>
             @else
-                <a href="{{ route('login') }}" class="unimart-link">
-                    Login
-                </a>
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('login') }}"
+                       class="rounded-2xl px-5 py-3 text-sm font-extrabold text-slate-700 hover:bg-pink-50 hover:text-pink-700">
+                        Login
+                    </a>
 
-                <a href="{{ route('register') }}" class="unimart-register">
-                    Daftar
-                </a>
+                    <a href="{{ route('register') }}"
+                       class="rounded-2xl bg-pink-700 px-5 py-3 text-sm font-extrabold text-white hover:bg-slate-900">
+                        Register
+                    </a>
+                </div>
             @endauth
         </div>
+
+        @auth
+            @if (! auth()->user()->is_admin)
+                <div class="flex gap-2 overflow-x-auto pb-4 lg:hidden">
+                    <a href="{{ route('dashboard') }}" class="shrink-0 rounded-xl bg-pink-50 px-4 py-2 text-sm font-bold text-slate-700">Dashboard</a>
+                    <a href="{{ route('produk.index') }}" class="shrink-0 rounded-xl bg-pink-50 px-4 py-2 text-sm font-bold text-slate-700">Produk</a>
+                    <a href="{{ route('produk.saya') }}" class="shrink-0 rounded-xl bg-pink-50 px-4 py-2 text-sm font-bold text-slate-700">Produk Saya</a>
+                    <a href="{{ route('keranjang.index') }}" class="shrink-0 rounded-xl bg-pink-50 px-4 py-2 text-sm font-bold text-slate-700">Keranjang</a>
+                    <a href="{{ route('pesanan.saya') }}" class="shrink-0 rounded-xl bg-pink-50 px-4 py-2 text-sm font-bold text-slate-700">Pesanan Saya</a>
+                    <a href="{{ route('pesanan.masuk') }}" class="shrink-0 rounded-xl bg-pink-50 px-4 py-2 text-sm font-bold text-slate-700">Pesanan Masuk</a>
+                </div>
+            @endif
+        @endauth
     </div>
-
-    <style>
-        .unimart-navbar {
-            background: rgba(255, 255, 255, 0.94);
-            border-bottom: 1px solid #f1dbe7;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            backdrop-filter: blur(14px);
-        }
-
-        .unimart-nav-container {
-            width: 100%;
-            min-height: 98px;
-            padding: 14px 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
-        }
-
-        .unimart-brand-area {
-            flex-shrink: 0;
-        }
-
-        .unimart-brand {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .unimart-brand svg,
-        .unimart-brand img {
-            width: 66px;
-            height: 66px;
-        }
-
-        .unimart-brand-title {
-            font-size: 28px;
-            line-height: 1;
-            font-weight: 900;
-            color: #0f172a;
-            letter-spacing: -0.8px;
-        }
-
-        .unimart-brand-subtitle {
-            margin-top: 8px;
-            font-size: 15px;
-            font-weight: 700;
-            color: #64748b;
-        }
-
-        .unimart-menu {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 22px;
-            flex-wrap: wrap;
-        }
-
-        .unimart-link {
-            color: #475569;
-            font-size: 16px;
-            font-weight: 900;
-            text-decoration: none;
-            transition: 0.2s ease;
-            white-space: nowrap;
-        }
-
-        .unimart-link:hover,
-        .unimart-link.active {
-            color: #db2777;
-        }
-
-        .unimart-user-name {
-            color: #64748b;
-            font-size: 16px;
-            font-weight: 800;
-            white-space: nowrap;
-        }
-
-        .unimart-logout {
-            border: 0;
-            border-radius: 18px;
-            padding: 18px 28px;
-            background: #0f172a;
-            color: white;
-            font-size: 16px;
-            font-weight: 900;
-            cursor: pointer;
-            transition: 0.2s ease;
-        }
-
-        .unimart-logout:hover {
-            background: #db2777;
-            transform: translateY(-1px);
-        }
-
-        .unimart-register {
-            border-radius: 18px;
-            padding: 16px 24px;
-            background: linear-gradient(135deg, #111827, #db2777);
-            color: white;
-            font-size: 16px;
-            font-weight: 900;
-            text-decoration: none;
-            white-space: nowrap;
-        }
-
-        @media (max-width: 1180px) {
-            .unimart-nav-container {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-
-            .unimart-menu {
-                justify-content: flex-start;
-                gap: 16px;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .unimart-nav-container {
-                padding: 14px 18px;
-            }
-
-            .unimart-brand svg,
-            .unimart-brand img {
-                width: 54px;
-                height: 54px;
-            }
-
-            .unimart-brand-title {
-                font-size: 24px;
-            }
-
-            .unimart-brand-subtitle {
-                font-size: 13px;
-            }
-
-            .unimart-link,
-            .unimart-user-name {
-                font-size: 14px;
-            }
-
-            .unimart-logout,
-            .unimart-register {
-                padding: 14px 20px;
-                font-size: 14px;
-            }
-        }
-    </style>
 </nav>
