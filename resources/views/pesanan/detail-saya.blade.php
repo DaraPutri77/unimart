@@ -45,6 +45,15 @@
                     </span>
                 </div>
 
+                @if ($pesanan->status === 'rejected')
+                    <div class="mt-6 rounded-2xl border border-red-200 bg-red-50 p-5">
+                        <h2 class="text-lg font-extrabold text-red-700">Alasan Penolakan</h2>
+                        <p class="mt-2 leading-7 text-red-700">
+                            {{ $pesanan->alasan_penolakan ?: 'Penjual tidak memberikan alasan penolakan.' }}
+                        </p>
+                    </div>
+                @endif
+
                 <div class="mt-8 rounded-2xl bg-slate-50 p-5">
                     <h2 class="text-xl font-extrabold text-slate-900">Penjual</h2>
 

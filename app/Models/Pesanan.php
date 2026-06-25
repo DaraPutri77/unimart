@@ -26,6 +26,7 @@ class Pesanan extends Model
         'metode_pembayaran',
         'lokasi_cod',
         'catatan',
+        'alasan_penolakan',
         'accepted_at',
         'rejected_at',
         'cancelled_at',

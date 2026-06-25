@@ -79,6 +79,7 @@ class SellerPesananController extends Controller
                 $pesanan->update([
                     'status' => Pesanan::STATUS_ACCEPTED,
                     'accepted_at' => now(),
+                    'alasan_penolakan' => null,
                 ]);
             });
         } catch (ValidationException $exception) {
@@ -98,11 +99,20 @@ class SellerPesananController extends Controller
             return back()->with('error', 'Pesanan ini sudah diproses.');
         }
 
+        $request->validate([
+            'alasan_penolakan' => ['required', 'string', 'min:5', 'max:1000'],
+        ], [
+            'alasan_penolakan.required' => 'Alasan penolakan wajib diisi.',
+            'alasan_penolakan.min' => 'Alasan penolakan minimal 5 karakter.',
+            'alasan_penolakan.max' => 'Alasan penolakan maksimal 1000 karakter.',
+        ]);
+
         $pesanan->update([
             'status' => Pesanan::STATUS_REJECTED,
+            'alasan_penolakan' => $request->alasan_penolakan,
             'rejected_at' => now(),
         ]);
 
-        return back()->with('success', 'Pesanan berhasil ditolak.');
+        return back()->with('success', 'Pesanan berhasil ditolak dengan alasan yang jelas.');
     }
 }

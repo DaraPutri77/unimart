@@ -17,6 +17,12 @@
                 </div>
             @endif
 
+            @if ($errors->any())
+                <div class="mb-5 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 font-semibold text-red-700">
+                    {{ $errors->first() }}
+                </div>
+            @endif
+
             <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-pink-100">
                 <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
@@ -30,6 +36,15 @@
                         {{ $pesanan->status_label }}
                     </span>
                 </div>
+
+                @if ($pesanan->status === 'rejected')
+                    <div class="mt-6 rounded-2xl border border-red-200 bg-red-50 p-5">
+                        <h2 class="text-lg font-extrabold text-red-700">Alasan Penolakan</h2>
+                        <p class="mt-2 leading-7 text-red-700">
+                            {{ $pesanan->alasan_penolakan ?: '-' }}
+                        </p>
+                    </div>
+                @endif
 
                 <div class="mt-8 rounded-2xl bg-slate-50 p-5">
                     <h2 class="text-xl font-extrabold text-slate-900">Pembeli</h2>
@@ -56,7 +71,6 @@
                                     <th class="px-4 py-3">Harga</th>
                                     <th class="px-4 py-3">Jumlah</th>
                                     <th class="px-4 py-3">Subtotal</th>
-                                    <th class="px-4 py-3">Stok Saat Ini</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 bg-white">
@@ -66,7 +80,6 @@
                                         <td class="px-4 py-3">Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
                                         <td class="px-4 py-3">{{ $item->jumlah }}</td>
                                         <td class="px-4 py-3 font-bold">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
-                                        <td class="px-4 py-3">{{ $item->produk->stok ?? '-' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -82,23 +95,45 @@
                 </div>
 
                 @if ($pesanan->canBeRespondedBySeller())
-                    <div class="mt-8 flex flex-col gap-3 md:flex-row">
+                    <div class="mt-8 grid gap-4 lg:grid-cols-2">
                         <form action="{{ route('pesanan.accept', $pesanan) }}" method="POST"
-                              onsubmit="return confirm('Setujui pesanan ini? Stok produk akan berkurang.')">
+                              onsubmit="return confirm('Setujui pesanan ini? Stok produk akan berkurang.')"
+                              class="rounded-2xl border border-green-200 bg-green-50 p-5">
                             @csrf
                             @method('PATCH')
+
+                            <h3 class="text-lg font-extrabold text-green-700">Setujui Pesanan</h3>
+                            <p class="mt-2 text-sm text-green-700">
+                                Gunakan jika produk tersedia dan penjual siap melakukan COD.
+                            </p>
+
                             <button type="submit"
-                                    class="rounded-2xl bg-green-600 px-6 py-3 font-bold text-white hover:bg-green-700">
+                                    class="mt-4 rounded-2xl bg-green-600 px-6 py-3 font-bold text-white hover:bg-green-700">
                                 Setujui Pesanan
                             </button>
                         </form>
 
                         <form action="{{ route('pesanan.reject', $pesanan) }}" method="POST"
-                              onsubmit="return confirm('Tolak pesanan ini?')">
+                              onsubmit="return confirm('Tolak pesanan ini dengan alasan yang sudah diisi?')"
+                              class="rounded-2xl border border-red-200 bg-red-50 p-5">
                             @csrf
                             @method('PATCH')
+
+                            <h3 class="text-lg font-extrabold text-red-700">Tolak Pesanan</h3>
+                            <p class="mt-2 text-sm text-red-700">
+                                Alasan wajib diisi agar pembeli mengetahui penyebab pesanan ditolak.
+                            </p>
+
+                            <textarea name="alasan_penolakan"
+                                      rows="4"
+                                      required
+                                      minlength="5"
+                                      maxlength="1000"
+                                      placeholder="Contoh: Stok barang sudah habis / jadwal COD tidak memungkinkan."
+                                      class="mt-4 w-full rounded-2xl border-red-200 focus:border-red-500 focus:ring-red-500">{{ old('alasan_penolakan') }}</textarea>
+
                             <button type="submit"
-                                    class="rounded-2xl bg-red-600 px-6 py-3 font-bold text-white hover:bg-red-700">
+                                    class="mt-4 rounded-2xl bg-red-600 px-6 py-3 font-bold text-white hover:bg-red-700">
                                 Tolak Pesanan
                             </button>
                         </form>

@@ -17,6 +17,7 @@ class Produk extends Model
         'harga',
         'stok',
         'kategori',
+        'kondisi',
         'fakultas',
         'deskripsi',
         'gambar',
@@ -25,10 +26,13 @@ class Produk extends Model
 
     protected $casts = [
         'aktif' => 'boolean',
+        'harga' => 'integer',
+        'stok' => 'integer',
     ];
 
     protected $appends = [
         'gambar_url',
+        'kondisi_label',
     ];
 
     public function getGambarUrlAttribute(): ?string
@@ -37,11 +41,24 @@ class Produk extends Model
             return null;
         }
 
+        if (str_starts_with($this->gambar, 'http://') || str_starts_with($this->gambar, 'https://')) {
+            return $this->gambar;
+        }
+
         if (str_starts_with($this->gambar, 'demo-products/')) {
             return asset($this->gambar);
         }
 
         return asset('storage/' . $this->gambar);
+    }
+
+    public function getKondisiLabelAttribute(): string
+    {
+        return match ($this->kondisi) {
+            'baru' => 'Barang Baru',
+            'bekas' => 'Barang Bekas',
+            default => 'Barang Bekas',
+        };
     }
 
     public function user(): BelongsTo

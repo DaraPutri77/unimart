@@ -1,301 +1,235 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div>
-            <h2 style="font-size:28px; font-weight:900; color:#0f172a; margin:0;">
-                Profil Akun
-            </h2>
-            <p style="margin:6px 0 0; color:#64748b; font-size:15px;">
-                Kelola identitas akun agar pembeli dan penjual lebih mudah saling mengenal.
-            </p>
-        </div>
-    </x-slot>
+    @php
+        $user = auth()->user();
 
-    <div style="padding:32px 24px; background:#fff7fb; min-height:calc(100vh - 120px);">
-        <div style="max-width:1120px; margin:0 auto; display:grid; gap:24px;">
+        $fotoProfil = null;
+
+        if (! empty($user->foto_profil)) {
+            $fotoProfil = asset('storage/' . $user->foto_profil);
+        }
+    @endphp
+
+    <div class="min-h-screen bg-pink-50/40 py-10">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="mb-8">
+                <p class="text-sm font-black uppercase tracking-[0.3em] text-pink-500">Profil Akun</p>
+                <h1 class="mt-3 text-4xl font-black text-slate-900">Kelola Profil</h1>
+                <p class="mt-3 max-w-3xl text-slate-600">
+                    Lengkapi profil agar pembeli dan penjual lebih mudah saling mengenal saat transaksi COD.
+                </p>
+            </div>
+
             @if (session('status') === 'profile-updated')
-                <div style="padding:14px 18px; border-radius:16px; background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; font-weight:800;">
+                <div class="mb-5 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 font-semibold text-green-700">
                     Profil berhasil diperbarui.
                 </div>
             @endif
 
             @if (session('status') === 'password-updated')
-                <div style="padding:14px 18px; border-radius:16px; background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; font-weight:800;">
+                <div class="mb-5 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 font-semibold text-green-700">
                     Password berhasil diperbarui.
                 </div>
             @endif
 
-            <div style="display:grid; grid-template-columns:340px 1fr; gap:24px; align-items:start;">
-                <div style="background:white; border-radius:28px; padding:26px; box-shadow:0 14px 35px rgba(15,23,42,0.06); border:1px solid #f3e8ef; text-align:center;">
-                    <div style="width:170px; height:170px; margin:0 auto 18px; border-radius:999px; overflow:hidden; background:linear-gradient(135deg,#111827,#db2777); display:flex; align-items:center; justify-content:center; color:white; font-size:54px; font-weight:900; border:6px solid #fff1f7; box-shadow:0 18px 40px rgba(219,39,119,0.18);">
-                        @if ($user->foto_profil)
-                            <img
-                                src="{{ asset('storage/' . $user->foto_profil) }}"
-                                alt="{{ $user->name }}"
-                                style="width:100%; height:100%; object-fit:cover;"
-                            >
+            <div class="grid gap-8 lg:grid-cols-[0.9fr_1.7fr]">
+                <div class="h-fit rounded-3xl bg-white p-8 text-center shadow-sm ring-1 ring-pink-100">
+                    <div class="mx-auto flex h-40 w-40 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-pink-700 to-slate-900 text-6xl font-black text-white ring-8 ring-pink-50">
+                        @if ($fotoProfil)
+                            <img src="{{ $fotoProfil }}" alt="{{ $user->name }}" class="h-full w-full object-cover">
                         @else
                             {{ strtoupper(substr($user->name, 0, 1)) }}
                         @endif
                     </div>
 
-                    <h3 style="margin:0 0 6px; font-size:24px; font-weight:900; color:#0f172a;">
+                    <h2 class="mt-6 text-3xl font-black text-slate-900">
                         {{ $user->name }}
-                    </h3>
+                    </h2>
 
-                    <p style="margin:0 0 10px; color:#64748b; font-size:14px; font-weight:700;">
+                    <p class="mt-2 break-words text-sm font-semibold text-slate-500">
                         {{ $user->email }}
                     </p>
 
-                    <div style="display:inline-flex; align-items:center; justify-content:center; padding:8px 14px; border-radius:999px; background:#fce7f3; color:#be185d; font-size:13px; font-weight:900;">
+                    <span class="mt-4 inline-flex rounded-full bg-pink-100 px-5 py-2 text-sm font-extrabold text-pink-700">
                         {{ $user->is_admin ? 'Admin UniMart' : 'User UniMart' }}
-                    </div>
+                    </span>
 
-                    <div style="margin-top:22px; text-align:left; display:grid; gap:10px; color:#334155; font-size:14px;">
-                        <div style="padding:12px 14px; border-radius:16px; background:#f8fafc;">
-                            <strong style="display:block; color:#0f172a; margin-bottom:4px;">WhatsApp</strong>
-                            {{ $user->whatsapp ?: 'Belum diisi' }}
+                    <div class="mt-8 space-y-4 text-left">
+                        <div class="rounded-2xl bg-slate-50 p-5">
+                            <p class="text-sm font-black text-slate-900">WhatsApp</p>
+                            <p class="mt-2 text-slate-600">
+                                {{ $user->whatsapp ?: 'Belum diisi' }}
+                            </p>
                         </div>
 
-                        <div style="padding:12px 14px; border-radius:16px; background:#f8fafc;">
-                            <strong style="display:block; color:#0f172a; margin-bottom:4px;">Bio Penjual</strong>
-                            {{ $user->bio ?: 'Belum ada bio. Tulis bio singkat agar pembeli lebih mengenalmu.' }}
+                        <div class="rounded-2xl bg-slate-50 p-5">
+                            <p class="text-sm font-black text-slate-900">Bio Penjual</p>
+                            <p class="mt-2 leading-7 text-slate-600">
+                                {{ $user->bio ?: 'Belum ada bio.' }}
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                <div style="display:grid; gap:24px;">
-                    <div style="background:white; border-radius:28px; padding:26px; box-shadow:0 14px 35px rgba(15,23,42,0.06); border:1px solid #f3e8ef;">
-                        <h3 style="margin:0 0 8px; font-size:24px; font-weight:900; color:#0f172a;">
-                            Informasi Profil
-                        </h3>
-
-                        <p style="margin:0 0 22px; color:#64748b; font-size:15px;">
+                <div class="space-y-8">
+                    <div class="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-pink-100">
+                        <h2 class="text-3xl font-black text-slate-900">Informasi Profil</h2>
+                        <p class="mt-2 text-slate-600">
                             Perbarui nama, email, nomor WhatsApp, foto profil, dan bio akunmu.
                         </p>
 
-                        <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" style="display:grid; gap:18px;">
+                        <form method="POST"
+                              action="{{ route('profile.update') }}"
+                              enctype="multipart/form-data"
+                              class="mt-8 space-y-6">
                             @csrf
                             @method('PATCH')
 
                             <div>
-                                <label for="name" style="display:block; margin-bottom:8px; font-weight:900; color:#0f172a;">
-                                    Nama Lengkap
-                                </label>
-
-                                <input
-                                    id="name"
-                                    name="name"
-                                    type="text"
-                                    value="{{ old('name', $user->name) }}"
-                                    required
-                                    autofocus
-                                    autocomplete="name"
-                                    style="width:100%; height:50px; border:1px solid #e2e8f0; border-radius:14px; padding:0 14px; outline:none;"
-                                >
-
+                                <label for="name" class="mb-2 block font-extrabold text-slate-900">Nama Lengkap</label>
+                                <input id="name"
+                                       name="name"
+                                       type="text"
+                                       value="{{ old('name', $user->name) }}"
+                                       required
+                                       autofocus
+                                       autocomplete="name"
+                                       class="w-full rounded-2xl border-slate-200 px-5 py-4 focus:border-pink-500 focus:ring-pink-500">
                                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
                             </div>
 
                             <div>
-                                <label for="email" style="display:block; margin-bottom:8px; font-weight:900; color:#0f172a;">
-                                    Email
-                                </label>
-
-                                <input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    value="{{ old('email', $user->email) }}"
-                                    required
-                                    autocomplete="username"
-                                    style="width:100%; height:50px; border:1px solid #e2e8f0; border-radius:14px; padding:0 14px; outline:none;"
-                                >
-
+                                <label for="email" class="mb-2 block font-extrabold text-slate-900">Email</label>
+                                <input id="email"
+                                       name="email"
+                                       type="email"
+                                       value="{{ old('email', $user->email) }}"
+                                       required
+                                       autocomplete="username"
+                                       class="w-full rounded-2xl border-slate-200 px-5 py-4 focus:border-pink-500 focus:ring-pink-500">
                                 <x-input-error :messages="$errors->get('email')" class="mt-2" />
                             </div>
 
                             <div>
-                                <label for="whatsapp" style="display:block; margin-bottom:8px; font-weight:900; color:#0f172a;">
-                                    Nomor WhatsApp
-                                </label>
-
-                                <input
-                                    id="whatsapp"
-                                    name="whatsapp"
-                                    type="text"
-                                    value="{{ old('whatsapp', $user->whatsapp) }}"
-                                    placeholder="Contoh: 6281234567890"
-                                    style="width:100%; height:50px; border:1px solid #e2e8f0; border-radius:14px; padding:0 14px; outline:none;"
-                                >
-
-                                <p style="margin:8px 0 0; color:#64748b; font-size:13px;">
-                                    Gunakan format 62 agar tombol WhatsApp lebih mudah dipakai.
+                                <label for="whatsapp" class="mb-2 block font-extrabold text-slate-900">Nomor WhatsApp</label>
+                                <input id="whatsapp"
+                                       name="whatsapp"
+                                       type="text"
+                                       value="{{ old('whatsapp', $user->whatsapp) }}"
+                                       placeholder="Contoh: 6281234567890"
+                                       class="w-full rounded-2xl border-slate-200 px-5 py-4 focus:border-pink-500 focus:ring-pink-500">
+                                <p class="mt-2 text-sm font-semibold text-slate-500">
+                                    Gunakan format 62 agar tombol WhatsApp dapat langsung digunakan.
                                 </p>
-
                                 <x-input-error :messages="$errors->get('whatsapp')" class="mt-2" />
                             </div>
 
                             <div>
-                                <label for="bio" style="display:block; margin-bottom:8px; font-weight:900; color:#0f172a;">
-                                    Bio Penjual
-                                </label>
-
-                                <textarea
-                                    id="bio"
-                                    name="bio"
-                                    rows="4"
-                                    placeholder="Contoh: Mahasiswa SAINTEK. Sering jual buku kuliah, barang elektronik, dan kebutuhan kampus. Bisa COD di area kampus."
-                                    style="width:100%; border:1px solid #e2e8f0; border-radius:14px; padding:14px; outline:none; resize:vertical;"
-                                >{{ old('bio', $user->bio) }}</textarea>
-
-                                <p style="margin:8px 0 0; color:#64748b; font-size:13px;">
-                                    Maksimal 500 karakter. Bio ini akan tampil di detail produk sebagai info penjual.
-                                </p>
-
+                                <label for="bio" class="mb-2 block font-extrabold text-slate-900">Bio Penjual</label>
+                                <textarea id="bio"
+                                          name="bio"
+                                          rows="5"
+                                          placeholder="Contoh: Mahasiswa SAINTEK yang menjual perlengkapan kuliah dan barang layak pakai."
+                                          class="w-full rounded-2xl border-slate-200 px-5 py-4 focus:border-pink-500 focus:ring-pink-500">{{ old('bio', $user->bio) }}</textarea>
                                 <x-input-error :messages="$errors->get('bio')" class="mt-2" />
                             </div>
 
                             <div>
-                                <label for="foto_profil" style="display:block; margin-bottom:8px; font-weight:900; color:#0f172a;">
-                                    Foto Profil
+                                <label class="mb-2 block font-extrabold text-slate-900">Foto Profil</label>
+
+                                <label for="foto_profil"
+                                       class="flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-pink-200 bg-pink-50/50 px-6 py-8 text-center transition hover:bg-pink-50">
+                                    <div class="text-5xl">📷</div>
+                                    <p class="mt-3 text-lg font-black text-slate-900">Pilih Foto Profil</p>
+                                    <p id="fileName" class="mt-1 text-sm font-semibold text-slate-500">
+                                        JPG, PNG, atau WEBP. Maksimal 4 MB.
+                                    </p>
+
+                                    <input id="foto_profil"
+                                           name="foto_profil"
+                                           type="file"
+                                           accept="image/jpeg,image/png,image/webp"
+                                           class="hidden"
+                                           onchange="showSelectedFileName(event)">
                                 </label>
-
-                                <input
-                                    id="foto_profil"
-                                    name="foto_profil"
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/jpg,image/webp"
-                                    style="width:100%; border:1px dashed #f9a8d4; border-radius:16px; padding:15px; background:#fff7fb;"
-                                >
-
-                                <p style="margin:8px 0 0; color:#64748b; font-size:13px;">
-                                    Pilih foto profil JPG, PNG, atau WEBP. Maksimal 4 MB.
-                                </p>
 
                                 <x-input-error :messages="$errors->get('foto_profil')" class="mt-2" />
                             </div>
 
-                            <div>
-                                <button
-                                    type="submit"
-                                    style="height:48px; padding:0 22px; border:0; border-radius:14px; background:linear-gradient(135deg,#111827,#db2777); color:white; font-weight:900; cursor:pointer;"
-                                >
-                                    Simpan Profil
-                                </button>
-                            </div>
+                            <button type="submit"
+                                    class="rounded-2xl bg-gradient-to-r from-slate-900 to-pink-700 px-8 py-4 font-extrabold text-white shadow-lg shadow-pink-100 hover:from-pink-700 hover:to-slate-900">
+                                Simpan Profil
+                            </button>
                         </form>
                     </div>
 
-                    <div style="background:white; border-radius:28px; padding:26px; box-shadow:0 14px 35px rgba(15,23,42,0.06); border:1px solid #f3e8ef;">
-                        <h3 style="margin:0 0 8px; font-size:24px; font-weight:900; color:#0f172a;">
-                            Update Password
-                        </h3>
-
-                        <p style="margin:0 0 22px; color:#64748b; font-size:15px;">
+                    <div class="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-pink-100">
+                        <h2 class="text-3xl font-black text-slate-900">Update Password</h2>
+                        <p class="mt-2 text-slate-600">
                             Ubah password akun jika diperlukan.
                         </p>
 
-                        <form method="POST" action="{{ route('password.update') }}" style="display:grid; gap:18px;">
+                        <form method="POST" action="{{ route('password.update') }}" class="mt-8 space-y-6">
                             @csrf
                             @method('PUT')
 
                             <div>
-                                <label for="current_password" style="display:block; margin-bottom:8px; font-weight:900; color:#0f172a;">
-                                    Password Saat Ini
-                                </label>
-
-                                <input
-                                    id="current_password"
-                                    name="current_password"
-                                    type="password"
-                                    autocomplete="current-password"
-                                    style="width:100%; height:50px; border:1px solid #e2e8f0; border-radius:14px; padding:0 14px; outline:none;"
-                                >
-
+                                <label for="current_password" class="mb-2 block font-extrabold text-slate-900">Password Saat Ini</label>
+                                <input id="current_password"
+                                       name="current_password"
+                                       type="password"
+                                       autocomplete="current-password"
+                                       class="w-full rounded-2xl border-slate-200 px-5 py-4 focus:border-pink-500 focus:ring-pink-500">
                                 <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
                             </div>
 
                             <div>
-                                <label for="password" style="display:block; margin-bottom:8px; font-weight:900; color:#0f172a;">
-                                    Password Baru
-                                </label>
-
-                                <input
-                                    id="password"
-                                    name="password"
-                                    type="password"
-                                    autocomplete="new-password"
-                                    style="width:100%; height:50px; border:1px solid #e2e8f0; border-radius:14px; padding:0 14px; outline:none;"
-                                >
-
+                                <label for="password" class="mb-2 block font-extrabold text-slate-900">Password Baru</label>
+                                <input id="password"
+                                       name="password"
+                                       type="password"
+                                       autocomplete="new-password"
+                                       class="w-full rounded-2xl border-slate-200 px-5 py-4 focus:border-pink-500 focus:ring-pink-500">
                                 <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
                             </div>
 
                             <div>
-                                <label for="password_confirmation" style="display:block; margin-bottom:8px; font-weight:900; color:#0f172a;">
-                                    Konfirmasi Password Baru
-                                </label>
-
-                                <input
-                                    id="password_confirmation"
-                                    name="password_confirmation"
-                                    type="password"
-                                    autocomplete="new-password"
-                                    style="width:100%; height:50px; border:1px solid #e2e8f0; border-radius:14px; padding:0 14px; outline:none;"
-                                >
-
+                                <label for="password_confirmation" class="mb-2 block font-extrabold text-slate-900">Konfirmasi Password Baru</label>
+                                <input id="password_confirmation"
+                                       name="password_confirmation"
+                                       type="password"
+                                       autocomplete="new-password"
+                                       class="w-full rounded-2xl border-slate-200 px-5 py-4 focus:border-pink-500 focus:ring-pink-500">
                                 <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
                             </div>
 
-                            <div>
-                                <button
-                                    type="submit"
-                                    style="height:48px; padding:0 22px; border:0; border-radius:14px; background:#111827; color:white; font-weight:900; cursor:pointer;"
-                                >
-                                    Simpan Password
-                                </button>
-                            </div>
+                            <button type="submit"
+                                    class="rounded-2xl bg-slate-900 px-8 py-4 font-extrabold text-white hover:bg-pink-700">
+                                Simpan Password
+                            </button>
                         </form>
                     </div>
 
-                    <div style="background:white; border-radius:28px; padding:26px; box-shadow:0 14px 35px rgba(15,23,42,0.06); border:1px solid #fee2e2;">
-                        <h3 style="margin:0 0 8px; font-size:24px; font-weight:900; color:#0f172a;">
-                            Hapus Akun
-                        </h3>
-
-                        <p style="margin:0 0 20px; color:#64748b; font-size:15px;">
-                            Gunakan hanya jika akun benar-benar ingin dihapus.
+                    <div class="rounded-3xl border border-yellow-200 bg-yellow-50 p-6">
+                        <h2 class="text-xl font-black text-yellow-800">Catatan Demo</h2>
+                        <p class="mt-2 leading-7 text-yellow-700">
+                            Fitur hapus akun tidak ditampilkan di halaman ini agar data produk dan riwayat pesanan demo tetap aman.
+                            Untuk aplikasi marketplace, penghapusan akun sebaiknya diganti dengan status nonaktif agar histori transaksi tidak hilang.
                         </p>
-
-                        <form method="POST" action="{{ route('profile.destroy') }}" onsubmit="return confirm('Yakin ingin menghapus akun ini? Semua data akun akan dihapus.')">
-                            @csrf
-                            @method('DELETE')
-
-                            <div style="margin-bottom:14px;">
-                                <label for="delete_password" style="display:block; margin-bottom:8px; font-weight:900; color:#0f172a;">
-                                    Masukkan Password
-                                </label>
-
-                                <input
-                                    id="delete_password"
-                                    name="password"
-                                    type="password"
-                                    style="width:100%; height:50px; border:1px solid #e2e8f0; border-radius:14px; padding:0 14px; outline:none;"
-                                >
-
-                                <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
-                            </div>
-
-                            <button
-                                type="submit"
-                                style="height:48px; padding:0 22px; border:0; border-radius:14px; background:#ef4444; color:white; font-weight:900; cursor:pointer;"
-                            >
-                                Hapus Akun
-                            </button>
-                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function showSelectedFileName(event) {
+            const fileName = document.getElementById('fileName');
+
+            if (event.target.files && event.target.files.length > 0) {
+                fileName.textContent = 'File dipilih: ' + event.target.files[0].name;
+            } else {
+                fileName.textContent = 'JPG, PNG, atau WEBP. Maksimal 4 MB.';
+            }
+        }
+    </script>
 </x-app-layout>

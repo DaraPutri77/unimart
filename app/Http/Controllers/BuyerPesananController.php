@@ -36,16 +36,33 @@ class BuyerPesananController extends Controller
     public function checkout(Request $request)
     {
         $request->validate([
+            'keranjang_ids' => ['required', 'array', 'min:1'],
+            'keranjang_ids.*' => ['required', 'integer'],
             'lokasi_cod' => ['nullable', 'string', 'max:255'],
             'catatan' => ['nullable', 'string', 'max:1000'],
+        ], [
+            'keranjang_ids.required' => 'Pilih minimal satu produk yang ingin di-checkout.',
+            'keranjang_ids.array' => 'Format produk checkout tidak valid.',
+            'keranjang_ids.min' => 'Pilih minimal satu produk yang ingin di-checkout.',
         ]);
+
+        $keranjangIds = collect($request->keranjang_ids)
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values();
 
         $keranjangs = Keranjang::with(['produk.user'])
             ->where('user_id', Auth::id())
+            ->whereIn('id', $keranjangIds)
             ->get();
 
         if ($keranjangs->isEmpty()) {
-            return back()->with('error', 'Keranjang masih kosong.');
+            return back()->with('error', 'Pilih minimal satu produk yang ingin di-checkout.');
+        }
+
+        if ($keranjangs->count() !== $keranjangIds->count()) {
+            return back()->with('error', 'Ada produk pilihan yang tidak valid atau bukan milik keranjang kamu.');
         }
 
         foreach ($keranjangs as $keranjang) {
@@ -85,6 +102,7 @@ class BuyerPesananController extends Controller
                     'metode_pembayaran' => 'COD',
                     'lokasi_cod' => $request->lokasi_cod,
                     'catatan' => $request->catatan,
+                    'alasan_penolakan' => null,
                 ]);
 
                 foreach ($items as $keranjang) {
@@ -99,12 +117,14 @@ class BuyerPesananController extends Controller
                 }
             }
 
-            Keranjang::where('user_id', Auth::id())->delete();
+            Keranjang::where('user_id', Auth::id())
+                ->whereIn('id', $keranjangs->pluck('id'))
+                ->delete();
         });
 
         return redirect()
             ->route('pesanan.saya')
-            ->with('success', 'Checkout berhasil. Pesanan kamu sedang menunggu konfirmasi penjual.');
+            ->with('success', 'Checkout berhasil. Produk yang dipilih sudah dibuat menjadi pesanan COD.');
     }
 
     public function cancel(Pesanan $pesanan)

@@ -3,169 +3,166 @@
 namespace App\Http\Controllers;
 
 use App\Models\Produk;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 class ProdukController extends Controller
 {
-    private array $kategoriList = [
-        'Elektronik',
-        'Aksesori',
-        'Buku',
-        'Fashion',
-        'Lainnya',
-    ];
+    private array $kategoriOptions = [
+    'Buku',
+    'Elektronik',
+    'Fashion',
+    'Alat Tulis',
+    'Aksesoris',
+    'Lainnya',
+];
 
-    private array $fakultasList = [
+    private array $fakultasOptions = [
         'SAINTEK',
         'FAI',
         'FBBP',
         'Fakultas Kesehatan',
     ];
 
-    public function index(Request $request): View
-    {
-        $search = $request->query('search');
-        $kategori = $request->query('kategori');
-        $fakultas = $request->query('fakultas');
+    private array $kondisiOptions = [
+        'baru',
+        'bekas',
+    ];
 
+    public function index(Request $request)
+    {
         $produks = Produk::with('user')
             ->where('aktif', true)
             ->where('user_id', '!=', Auth::id())
-            ->when($search, function ($query) use ($search) {
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('nama', 'like', '%' . $search . '%')
+                        ->orWhere('deskripsi', 'like', '%' . $search . '%')
                         ->orWhere('kategori', 'like', '%' . $search . '%')
-                        ->orWhere('fakultas', 'like', '%' . $search . '%')
-                        ->orWhere('deskripsi', 'like', '%' . $search . '%');
+                        ->orWhere('fakultas', 'like', '%' . $search . '%');
                 });
             })
-            ->when($kategori, function ($query) use ($kategori) {
-                $query->where('kategori', $kategori);
+            ->when($request->filled('kategori'), function ($query) use ($request) {
+                $query->where('kategori', $request->kategori);
             })
-            ->when($fakultas, function ($query) use ($fakultas) {
-                $query->where('fakultas', $fakultas);
+            ->when($request->filled('kondisi'), function ($query) use ($request) {
+                $query->where('kondisi', $request->kondisi);
+            })
+            ->when($request->filled('fakultas'), function ($query) use ($request) {
+                $query->where('fakultas', $request->fakultas);
             })
             ->latest()
-            ->paginate(6)
-            ->withQueryString();
+            ->get();
 
-        $kategoriList = $this->kategoriList;
-        $fakultasList = $this->fakultasList;
-
-        return view('produk.index', compact(
-            'produks',
-            'kategoriList',
-            'fakultasList',
-            'search',
-            'kategori',
-            'fakultas'
-        ));
+        return view('produk.index', [
+            'produks' => $produks,
+            'kategoriOptions' => $this->kategoriOptions,
+            'fakultasOptions' => $this->fakultasOptions,
+            'kondisiOptions' => $this->kondisiOptions,
+        ]);
     }
 
-    public function produkSaya(Request $request): View
+    public function produkSaya(Request $request)
     {
-        $search = $request->query('search');
-        $kategori = $request->query('kategori');
-        $fakultas = $request->query('fakultas');
-
         $produks = Produk::with('user')
             ->where('user_id', Auth::id())
-            ->when($search, function ($query) use ($search) {
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('nama', 'like', '%' . $search . '%')
+                        ->orWhere('deskripsi', 'like', '%' . $search . '%')
                         ->orWhere('kategori', 'like', '%' . $search . '%')
-                        ->orWhere('fakultas', 'like', '%' . $search . '%')
-                        ->orWhere('deskripsi', 'like', '%' . $search . '%');
+                        ->orWhere('fakultas', 'like', '%' . $search . '%');
                 });
             })
-            ->when($kategori, function ($query) use ($kategori) {
-                $query->where('kategori', $kategori);
+            ->when($request->filled('kategori'), function ($query) use ($request) {
+                $query->where('kategori', $request->kategori);
             })
-            ->when($fakultas, function ($query) use ($fakultas) {
-                $query->where('fakultas', $fakultas);
+            ->when($request->filled('kondisi'), function ($query) use ($request) {
+                $query->where('kondisi', $request->kondisi);
+            })
+            ->when($request->filled('status'), function ($query) use ($request) {
+                if ($request->status === 'aktif') {
+                    $query->where('aktif', true);
+                }
+
+                if ($request->status === 'nonaktif') {
+                    $query->where('aktif', false);
+                }
             })
             ->latest()
-            ->paginate(6)
-            ->withQueryString();
+            ->get();
 
-        $kategoriList = $this->kategoriList;
-        $fakultasList = $this->fakultasList;
-
-        return view('produk.saya', compact(
-            'produks',
-            'kategoriList',
-            'fakultasList',
-            'search',
-            'kategori',
-            'fakultas'
-        ));
+        return view('produk.saya', [
+            'produks' => $produks,
+            'kategoriOptions' => $this->kategoriOptions,
+            'fakultasOptions' => $this->fakultasOptions,
+            'kondisiOptions' => $this->kondisiOptions,
+        ]);
     }
 
-    public function create(): View
+    public function create()
     {
-        $kategoriList = $this->kategoriList;
-        $fakultasList = $this->fakultasList;
-
-        return view('produk.create', compact('kategoriList', 'fakultasList'));
+        return view('produk.create', [
+            'kategoriOptions' => $this->kategoriOptions,
+            'fakultasOptions' => $this->fakultasOptions,
+            'kondisiOptions' => $this->kondisiOptions,
+        ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'nama' => ['required', 'string', 'max:255'],
             'harga' => ['required', 'integer', 'min:0'],
             'stok' => ['required', 'integer', 'min:0'],
-            'kategori' => ['required', 'string', 'in:Elektronik,Aksesori,Buku,Fashion,Lainnya'],
-            'fakultas' => ['required', 'string', 'in:SAINTEK,FAI,FBBP,Fakultas Kesehatan'],
-            'deskripsi' => ['nullable', 'string'],
+            'kategori' => ['required', 'string', Rule::in($this->kategoriOptions)],
+            'kondisi' => ['required', 'string', Rule::in($this->kondisiOptions)],
+            'fakultas' => ['required', 'string', Rule::in($this->fakultasOptions)],
+            'deskripsi' => ['nullable', 'string', 'max:3000'],
             'gambar' => ['nullable', 'file', 'max:4096'],
+            'aktif' => ['nullable'],
         ]);
 
-        $gambarPath = null;
-
-        if ($request->hasFile('gambar') && $request->file('gambar')->isValid()) {
-            $gambarPath = $request->file('gambar')->store('produk', 'public');
+        if ($request->hasFile('gambar')) {
+            $validated['gambar'] = $request->file('gambar')->store('produk', 'public');
         }
 
-        Produk::create([
-            'user_id' => Auth::id(),
-            'nama' => $validated['nama'],
-            'harga' => $validated['harga'],
-            'stok' => $validated['stok'],
-            'kategori' => $validated['kategori'],
-            'fakultas' => $validated['fakultas'],
-            'deskripsi' => $validated['deskripsi'] ?? null,
-            'gambar' => $gambarPath,
-            'aktif' => true,
-        ]);
+        $validated['user_id'] = Auth::id();
+        $validated['aktif'] = $request->boolean('aktif', true);
+
+        Produk::create($validated);
 
         return redirect()
             ->route('produk.saya')
-            ->with('success', 'Produk berhasil ditambahkan dan masuk ke Produk Saya.');
+            ->with('success', 'Produk berhasil ditambahkan.');
     }
 
-    public function show(Produk $produk): View
+    public function show(Produk $produk)
     {
         $produk->load('user');
 
         return view('produk.show', compact('produk'));
     }
 
-    public function edit(Produk $produk): View
+    public function edit(Produk $produk)
     {
         $this->authorizeOwner($produk);
 
-        $kategoriList = $this->kategoriList;
-        $fakultasList = $this->fakultasList;
-
-        return view('produk.edit', compact('produk', 'kategoriList', 'fakultasList'));
+        return view('produk.edit', [
+            'produk' => $produk,
+            'kategoriOptions' => $this->kategoriOptions,
+            'fakultasOptions' => $this->fakultasOptions,
+            'kondisiOptions' => $this->kondisiOptions,
+        ]);
     }
 
-    public function update(Request $request, Produk $produk): RedirectResponse
+    public function update(Request $request, Produk $produk)
     {
         $this->authorizeOwner($produk);
 
@@ -173,42 +170,36 @@ class ProdukController extends Controller
             'nama' => ['required', 'string', 'max:255'],
             'harga' => ['required', 'integer', 'min:0'],
             'stok' => ['required', 'integer', 'min:0'],
-            'kategori' => ['required', 'string', 'in:Elektronik,Aksesori,Buku,Fashion,Lainnya'],
-            'fakultas' => ['required', 'string', 'in:SAINTEK,FAI,FBBP,Fakultas Kesehatan'],
-            'deskripsi' => ['nullable', 'string'],
+            'kategori' => ['required', 'string', Rule::in($this->kategoriOptions)],
+            'kondisi' => ['required', 'string', Rule::in($this->kondisiOptions)],
+            'fakultas' => ['required', 'string', Rule::in($this->fakultasOptions)],
+            'deskripsi' => ['nullable', 'string', 'max:3000'],
             'gambar' => ['nullable', 'file', 'max:4096'],
+            'aktif' => ['nullable'],
         ]);
 
-        $gambarPath = $produk->gambar;
-
-        if ($request->hasFile('gambar') && $request->file('gambar')->isValid()) {
-            if ($produk->gambar && Storage::disk('public')->exists($produk->gambar)) {
+        if ($request->hasFile('gambar')) {
+            if ($produk->gambar && ! str_starts_with($produk->gambar, 'demo-products/') && Storage::disk('public')->exists($produk->gambar)) {
                 Storage::disk('public')->delete($produk->gambar);
             }
 
-            $gambarPath = $request->file('gambar')->store('produk', 'public');
+            $validated['gambar'] = $request->file('gambar')->store('produk', 'public');
         }
 
-        $produk->update([
-            'nama' => $validated['nama'],
-            'harga' => $validated['harga'],
-            'stok' => $validated['stok'],
-            'kategori' => $validated['kategori'],
-            'fakultas' => $validated['fakultas'],
-            'deskripsi' => $validated['deskripsi'] ?? null,
-            'gambar' => $gambarPath,
-        ]);
+        $validated['aktif'] = $request->boolean('aktif');
+
+        $produk->update($validated);
 
         return redirect()
-            ->route('produk.show', $produk)
+            ->route('produk.saya')
             ->with('success', 'Produk berhasil diperbarui.');
     }
 
-    public function destroy(Produk $produk): RedirectResponse
+    public function destroy(Produk $produk)
     {
         $this->authorizeOwner($produk);
 
-        if ($produk->gambar && Storage::disk('public')->exists($produk->gambar)) {
+        if ($produk->gambar && ! str_starts_with($produk->gambar, 'demo-products/') && Storage::disk('public')->exists($produk->gambar)) {
             Storage::disk('public')->delete($produk->gambar);
         }
 
@@ -219,36 +210,10 @@ class ProdukController extends Controller
             ->with('success', 'Produk berhasil dihapus.');
     }
 
-    public function tandaiTerjual(Produk $produk): RedirectResponse
-    {
-        $this->authorizeOwner($produk);
-
-        $produk->update([
-            'aktif' => false,
-        ]);
-
-        return redirect()
-            ->route('produk.saya')
-            ->with('success', 'Produk berhasil ditandai terjual.');
-    }
-
-    public function tandaiTersedia(Produk $produk): RedirectResponse
-    {
-        $this->authorizeOwner($produk);
-
-        $produk->update([
-            'aktif' => true,
-        ]);
-
-        return redirect()
-            ->route('produk.saya')
-            ->with('success', 'Produk berhasil ditandai tersedia.');
-    }
-
     private function authorizeOwner(Produk $produk): void
     {
-        if (! Auth::check() || $produk->user_id !== Auth::id()) {
-            abort(403, 'Kamu tidak memiliki akses untuk mengelola produk ini.');
+        if ((int) $produk->user_id !== (int) Auth::id()) {
+            abort(403);
         }
     }
 }
