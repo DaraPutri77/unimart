@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -23,52 +24,71 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $validated = $request->validate([
+        $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
                 'string',
-                'lowercase',
                 'email',
                 'max:255',
-                Rule::unique(User::class)->ignore($user->id),
+                Rule::unique('users', 'email')->ignore($user->id),
             ],
-            'whatsapp' => ['nullable', 'string', 'max:20'],
-            'bio' => ['nullable', 'string', 'max:500'],
-            'foto_profil' => ['nullable', 'file', 'max:4096'],
-        ], [
-            'foto_profil.file' => 'File foto profil tidak valid.',
-            'foto_profil.max' => 'Ukuran foto profil maksimal 4 MB.',
-            'bio.max' => 'Bio maksimal 500 karakter.',
+            'whatsapp' => ['nullable', 'string', 'max:30'],
+            'fakultas' => ['nullable', 'string', 'max:100'],
+            'bio' => ['nullable', 'string', 'max:1000'],
+
+            'foto_profil' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'profile_photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
-        $fotoProfilPath = $user->foto_profil;
+        if (Schema::hasColumn('users', 'name')) {
+            $user->name = $request->input('name');
+        }
 
-        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
-            if ($user->foto_profil && Storage::disk('public')->exists($user->foto_profil)) {
+        if (Schema::hasColumn('users', 'email')) {
+            if ($user->email !== $request->input('email') && Schema::hasColumn('users', 'email_verified_at')) {
+                $user->email_verified_at = null;
+            }
+
+            $user->email = $request->input('email');
+        }
+
+        if (Schema::hasColumn('users', 'whatsapp')) {
+            $user->whatsapp = $request->input('whatsapp');
+        }
+
+        if (Schema::hasColumn('users', 'fakultas')) {
+            $user->fakultas = $request->input('fakultas');
+        }
+
+        if (Schema::hasColumn('users', 'bio')) {
+            $user->bio = $request->input('bio');
+        }
+
+        $fileField = null;
+
+        foreach (['foto_profil', 'avatar', 'photo', 'foto', 'profile_photo'] as $field) {
+            if ($request->hasFile($field)) {
+                $fileField = $field;
+                break;
+            }
+        }
+
+        if ($fileField && Schema::hasColumn('users', 'foto_profil')) {
+            if (! empty($user->foto_profil)) {
                 Storage::disk('public')->delete($user->foto_profil);
             }
 
-            $fotoProfilPath = $request->file('foto_profil')->store('profile', 'public');
-        }
-
-        $user->fill([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'whatsapp' => $validated['whatsapp'] ?? null,
-            'bio' => $validated['bio'] ?? null,
-            'foto_profil' => $fotoProfilPath,
-        ]);
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
+            $user->foto_profil = $request->file($fileField)->store('foto-profil', 'public');
         }
 
         $user->save();
 
-        return redirect()
-            ->route('profile.edit')
-            ->with('status', 'profile-updated');
+        return Redirect::route('profile.edit')
+            ->with('success', 'Profil berhasil diperbarui.');
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -79,7 +99,7 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        if ($user->foto_profil && Storage::disk('public')->exists($user->foto_profil)) {
+        if (Schema::hasColumn('users', 'foto_profil') && ! empty($user->foto_profil)) {
             Storage::disk('public')->delete($user->foto_profil);
         }
 
@@ -90,6 +110,6 @@ class ProfileController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return Redirect::to('/')->with('success', 'Akun berhasil dihapus.');
     }
 }
