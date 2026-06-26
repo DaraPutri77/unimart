@@ -20,45 +20,13 @@
             default => 'border-slate-300 bg-slate-50 text-slate-700',
         };
 
-        $bolehHubungiPenjual = in_array($statusAsli, [
-            'accepted',
-            'diterima',
-            'approved',
-            'disetujui',
-        ]);
-
-        $items = collect();
-
-        if (isset($pesanan->items)) {
-            $items = collect($pesanan->items);
-        } elseif (isset($pesanan->detailPesanans)) {
-            $items = collect($pesanan->detailPesanans);
-        } elseif (isset($pesanan->details)) {
-            $items = collect($pesanan->details);
-        } elseif (isset($pesanan->produk)) {
-            $items = collect([$pesanan]);
-        }
-
-        $itemPertama = $items->first();
-        $produkPertama = $itemPertama->produk ?? $pesanan->produk ?? null;
-
         $penjual = $pesanan->penjual
             ?? $pesanan->seller
-            ?? $produkPertama->user
+            ?? $pesanan->produk->user
             ?? null;
 
         $namaPenjual = $penjual->name ?? 'Penjual';
-        $whatsappPenjual = $penjual->whatsapp ?? '';
-
-        $nomorWa = preg_replace('/[^0-9]/', '', $whatsappPenjual);
-
-        if (str_starts_with($nomorWa, '0')) {
-            $nomorWa = '62' . substr($nomorWa, 1);
-        }
-
-        if (str_starts_with($nomorWa, '8')) {
-            $nomorWa = '62' . $nomorWa;
-        }
+        $emailPenjual = $penjual->email ?? '-';
 
         $kodePesanan = $pesanan->kode_pesanan
             ?? $pesanan->kode
@@ -82,6 +50,18 @@
             ? $pesanan->created_at->format('d M Y H:i')
             : '-';
 
+        $items = collect();
+
+        if (isset($pesanan->items)) {
+            $items = collect($pesanan->items);
+        } elseif (isset($pesanan->detailPesanans)) {
+            $items = collect($pesanan->detailPesanans);
+        } elseif (isset($pesanan->details)) {
+            $items = collect($pesanan->details);
+        } elseif (isset($pesanan->produk)) {
+            $items = collect([$pesanan]);
+        }
+
         $totalPesanan = $pesanan->total_harga
             ?? $pesanan->total
             ?? $pesanan->subtotal
@@ -104,17 +84,6 @@
                 return $harga * $jumlah;
             });
         }
-
-        $pesanWa = "Halo Kak {$namaPenjual}, pesanan saya di UniMart sudah diterima.\n\n";
-        $pesanWa .= "Kode Pesanan: {$kodePesanan}\n";
-        $pesanWa .= "Total: Rp " . number_format($totalPesanan, 0, ',', '.') . "\n";
-        $pesanWa .= "Metode Pembayaran: {$metodePembayaran}\n";
-        $pesanWa .= "Lokasi COD: {$lokasiCod}\n\n";
-        $pesanWa .= "Saya ingin melanjutkan transaksi COD. Terima kasih.";
-
-        $linkWa = $nomorWa
-            ? 'https://web.whatsapp.com/send?phone=' . $nomorWa . '&text=' . urlencode($pesanWa)
-            : '#';
     @endphp
 
     <div class="min-h-screen bg-pink-50/40 py-10">
@@ -183,38 +152,14 @@
                         </p>
                     </div>
 
-                    <div class="mt-6">
-                        @if ($bolehHubungiPenjual && $nomorWa)
-                            <a href="{{ $linkWa }}"
-                               target="_blank"
-                               rel="noopener noreferrer"
-                               onclick="navigator.clipboard && navigator.clipboard.writeText(@js($pesanWa));"
-                               class="inline-flex items-center justify-center rounded-3xl bg-green-600 px-7 py-4 text-base font-black text-white shadow-sm transition hover:bg-green-700">
-                                Hubungi Penjual via WhatsApp
-                            </a>
-                        @elseif ($bolehHubungiPenjual && ! $nomorWa)
-                            <div class="rounded-3xl border border-slate-200 bg-white px-6 py-5">
-                                <p class="text-base font-black text-slate-700">
-                                    Nomor WhatsApp penjual belum tersedia.
-                                </p>
-                            </div>
-                        @elseif ($statusAsli === 'pending')
-                            <div class="rounded-3xl border border-yellow-200 bg-yellow-50 px-6 py-5">
-                                <p class="text-base font-black text-yellow-700">
-                                    Menunggu konfirmasi penjual
-                                </p>
+                    <div class="mt-6 rounded-3xl border border-yellow-200 bg-yellow-50 px-6 py-5">
+                        <p class="text-base font-black text-yellow-700">
+                            Pesanan masih menunggu konfirmasi penjual.
+                        </p>
 
-                                <p class="mt-2 text-sm font-semibold leading-6 text-yellow-700">
-                                    Tombol WhatsApp akan tersedia setelah penjual menerima pesanan.
-                                </p>
-                            </div>
-                        @else
-                            <div class="rounded-3xl border border-slate-200 bg-white px-6 py-5">
-                                <p class="text-base font-black text-slate-700">
-                                    Kontak penjual tidak tersedia untuk status pesanan ini.
-                                </p>
-                            </div>
-                        @endif
+                        <p class="mt-2 text-sm font-semibold leading-6 text-yellow-700">
+                            Kontak WhatsApp tidak ditampilkan pada tahap ini agar alur pesanan tetap melalui proses konfirmasi terlebih dahulu.
+                        </p>
                     </div>
                 </div>
 
@@ -323,3 +268,4 @@
         </div>
     </div>
 </x-app-layout>
+

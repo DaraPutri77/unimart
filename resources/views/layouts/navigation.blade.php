@@ -2,26 +2,67 @@
     @php
         $user = auth()->user();
         $isAdmin = (bool) ($user->is_admin ?? false);
+
+        $namaLengkap = trim($user->name ?? 'User');
+        $namaParts = preg_split('/\s+/', $namaLengkap);
+        $namaDepan = $isAdmin ? 'Admin' : ($namaParts[0] ?? 'User');
+
+        $jumlahKeranjang = 0;
+        $jumlahPesananMasuk = 0;
+
+        if ($user) {
+            if (
+                \Illuminate\Support\Facades\Schema::hasTable('keranjangs') &&
+                \Illuminate\Support\Facades\Schema::hasColumn('keranjangs', 'user_id')
+            ) {
+                $jumlahKeranjang = \App\Models\Keranjang::where('user_id', $user->id)->count();
+            }
+
+            if (
+                \Illuminate\Support\Facades\Schema::hasTable('pesanans') &&
+                \Illuminate\Support\Facades\Schema::hasColumn('pesanans', 'penjual_id')
+            ) {
+                $queryPesananMasuk = \App\Models\Pesanan::where('penjual_id', $user->id);
+
+                if (\Illuminate\Support\Facades\Schema::hasColumn('pesanans', 'status')) {
+                    $queryPesananMasuk->where('status', 'pending');
+                }
+
+                $jumlahPesananMasuk = $queryPesananMasuk->count();
+            } elseif (
+                \Illuminate\Support\Facades\Schema::hasTable('pesanans') &&
+                \Illuminate\Support\Facades\Schema::hasColumn('pesanans', 'seller_id')
+            ) {
+                $queryPesananMasuk = \App\Models\Pesanan::where('seller_id', $user->id);
+
+                if (\Illuminate\Support\Facades\Schema::hasColumn('pesanans', 'status')) {
+                    $queryPesananMasuk->where('status', 'pending');
+                }
+
+                $jumlahPesananMasuk = $queryPesananMasuk->count();
+            }
+        }
     @endphp
 
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex min-h-[86px] items-center justify-between gap-6">
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-4">
+    <div class="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
+        <div class="flex min-h-[86px] items-center justify-between gap-4">
+            <a href="{{ route('dashboard') }}" class="flex shrink-0 items-center gap-3">
                 <x-application-logo />
 
                 <div>
                     <h1 class="text-2xl font-black leading-none tracking-tight text-slate-900">
                         UniMart
                     </h1>
+
                     <p class="mt-1 text-sm font-bold text-slate-500">
                         Campus Marketplace
                     </p>
                 </div>
             </a>
 
-            <div class="hidden items-center gap-2 lg:flex">
+            <div class="hidden items-center gap-1 lg:flex">
                 <a href="{{ route('dashboard') }}"
-                   class="rounded-2xl px-5 py-3 text-sm font-black transition
+                   class="inline-flex items-center justify-center rounded-2xl px-4 py-3 text-sm font-black transition
                    {{ request()->routeIs('dashboard') ? 'bg-pink-100 text-pink-700' : 'text-slate-700 hover:bg-pink-50 hover:text-pink-700' }}">
                     Dashboard
                 </a>
@@ -29,7 +70,7 @@
                 @if (! $isAdmin)
                     @if (\Illuminate\Support\Facades\Route::has('produk.index'))
                         <a href="{{ route('produk.index') }}"
-                           class="rounded-2xl px-5 py-3 text-sm font-black transition
+                           class="inline-flex items-center justify-center rounded-2xl px-4 py-3 text-sm font-black transition
                            {{ request()->routeIs('produk.index') || request()->routeIs('produk.show') ? 'bg-pink-100 text-pink-700' : 'text-slate-700 hover:bg-pink-50 hover:text-pink-700' }}">
                             Produk
                         </a>
@@ -37,39 +78,57 @@
 
                     @if (\Illuminate\Support\Facades\Route::has('produk.saya'))
                         <a href="{{ route('produk.saya') }}"
-                           class="rounded-2xl px-5 py-3 text-sm font-black transition
+                           class="inline-flex items-center justify-center rounded-2xl px-4 py-3 text-sm font-black transition
                            {{ request()->routeIs('produk.saya') || request()->routeIs('produk.create') || request()->routeIs('produk.edit') ? 'bg-pink-100 text-pink-700' : 'text-slate-700 hover:bg-pink-50 hover:text-pink-700' }}">
-                            Produk Saya
+                            <span class="leading-tight">
+                                Produk<br>Saya
+                            </span>
                         </a>
                     @endif
 
                     @if (\Illuminate\Support\Facades\Route::has('keranjang.index'))
                         <a href="{{ route('keranjang.index') }}"
-                           class="rounded-2xl px-5 py-3 text-sm font-black transition
+                           class="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-black transition
                            {{ request()->routeIs('keranjang.*') ? 'bg-pink-100 text-pink-700' : 'text-slate-700 hover:bg-pink-50 hover:text-pink-700' }}">
-                            Keranjang
+                            <span>Keranjang</span>
+
+                            @if ($jumlahKeranjang > 0)
+                                <span class="-translate-y-1 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-pink-600 px-2 text-xs font-black leading-none text-white shadow-md">
+                                    {{ $jumlahKeranjang > 99 ? '99+' : $jumlahKeranjang }}
+                                </span>
+                            @endif
                         </a>
                     @endif
 
                     @if (\Illuminate\Support\Facades\Route::has('pesanan.saya'))
                         <a href="{{ route('pesanan.saya') }}"
-                           class="rounded-2xl px-5 py-3 text-sm font-black transition
+                           class="inline-flex items-center justify-center rounded-2xl px-4 py-3 text-sm font-black transition
                            {{ request()->routeIs('pesanan.saya') ? 'bg-pink-100 text-pink-700' : 'text-slate-700 hover:bg-pink-50 hover:text-pink-700' }}">
-                            Pesanan Saya
+                            <span class="leading-tight">
+                                Pesanan<br>Saya
+                            </span>
                         </a>
                     @endif
 
                     @if (\Illuminate\Support\Facades\Route::has('pesanan.masuk'))
                         <a href="{{ route('pesanan.masuk') }}"
-                           class="rounded-2xl px-5 py-3 text-sm font-black transition
+                           class="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-black transition
                            {{ request()->routeIs('pesanan.masuk') ? 'bg-pink-100 text-pink-700' : 'text-slate-700 hover:bg-pink-50 hover:text-pink-700' }}">
-                            Pesanan Masuk
+                            <span class="leading-tight">
+                                Pesanan<br>Masuk
+                            </span>
+
+                            @if ($jumlahPesananMasuk > 0)
+                                <span class="-translate-y-1 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-red-500 px-2 text-xs font-black leading-none text-white shadow-md">
+                                    {{ $jumlahPesananMasuk > 99 ? '99+' : $jumlahPesananMasuk }}
+                                </span>
+                            @endif
                         </a>
                     @endif
 
                     @if (\Illuminate\Support\Facades\Route::has('profile.edit'))
                         <a href="{{ route('profile.edit') }}"
-                           class="rounded-2xl px-5 py-3 text-sm font-black transition
+                           class="inline-flex items-center justify-center rounded-2xl px-4 py-3 text-sm font-black transition
                            {{ request()->routeIs('profile.edit') ? 'bg-pink-100 text-pink-700' : 'text-slate-700 hover:bg-pink-50 hover:text-pink-700' }}">
                             Profil
                         </a>
@@ -77,17 +136,11 @@
                 @endif
             </div>
 
-            <div class="flex items-center gap-4">
+            <div class="flex shrink-0 items-center gap-3">
                 <div class="hidden text-right sm:block">
-                    <p class="text-sm font-black text-slate-900">
-                        Halo, {{ $isAdmin ? 'Admin' : $user->name }}
+                    <p class="whitespace-nowrap text-sm font-black leading-snug text-slate-900">
+                        Halo, {{ $namaDepan }}
                     </p>
-
-                    @if ($isAdmin)
-                        <p class="text-xs font-bold text-pink-600">
-                            Pemantau Statistik
-                        </p>
-                    @endif
                 </div>
 
                 <form method="POST" action="{{ route('logout') }}">
@@ -110,32 +163,56 @@
 
             @if (! $isAdmin)
                 @if (\Illuminate\Support\Facades\Route::has('produk.index'))
-                    <a href="{{ route('produk.index') }}" class="rounded-2xl bg-white px-4 py-2 text-sm font-black text-slate-700 ring-1 ring-pink-100">
+                    <a href="{{ route('produk.index') }}"
+                       class="rounded-2xl bg-white px-4 py-2 text-sm font-black text-slate-700 ring-1 ring-pink-100">
                         Produk
                     </a>
                 @endif
 
                 @if (\Illuminate\Support\Facades\Route::has('produk.saya'))
-                    <a href="{{ route('produk.saya') }}" class="rounded-2xl bg-white px-4 py-2 text-sm font-black text-slate-700 ring-1 ring-pink-100">
+                    <a href="{{ route('produk.saya') }}"
+                       class="rounded-2xl bg-white px-4 py-2 text-sm font-black text-slate-700 ring-1 ring-pink-100">
                         Produk Saya
                     </a>
                 @endif
 
                 @if (\Illuminate\Support\Facades\Route::has('keranjang.index'))
-                    <a href="{{ route('keranjang.index') }}" class="rounded-2xl bg-white px-4 py-2 text-sm font-black text-slate-700 ring-1 ring-pink-100">
+                    <a href="{{ route('keranjang.index') }}"
+                       class="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-black text-slate-700 ring-1 ring-pink-100">
                         Keranjang
+
+                        @if ($jumlahKeranjang > 0)
+                            <span class="-translate-y-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-pink-600 px-2 text-xs font-black text-white">
+                                {{ $jumlahKeranjang > 99 ? '99+' : $jumlahKeranjang }}
+                            </span>
+                        @endif
                     </a>
                 @endif
 
                 @if (\Illuminate\Support\Facades\Route::has('pesanan.saya'))
-                    <a href="{{ route('pesanan.saya') }}" class="rounded-2xl bg-white px-4 py-2 text-sm font-black text-slate-700 ring-1 ring-pink-100">
+                    <a href="{{ route('pesanan.saya') }}"
+                       class="rounded-2xl bg-white px-4 py-2 text-sm font-black text-slate-700 ring-1 ring-pink-100">
                         Pesanan Saya
                     </a>
                 @endif
 
                 @if (\Illuminate\Support\Facades\Route::has('pesanan.masuk'))
-                    <a href="{{ route('pesanan.masuk') }}" class="rounded-2xl bg-white px-4 py-2 text-sm font-black text-slate-700 ring-1 ring-pink-100">
+                    <a href="{{ route('pesanan.masuk') }}"
+                       class="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-black text-slate-700 ring-1 ring-pink-100">
                         Pesanan Masuk
+
+                        @if ($jumlahPesananMasuk > 0)
+                            <span class="-translate-y-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-2 text-xs font-black text-white">
+                                {{ $jumlahPesananMasuk > 99 ? '99+' : $jumlahPesananMasuk }}
+                            </span>
+                        @endif
+                    </a>
+                @endif
+
+                @if (\Illuminate\Support\Facades\Route::has('profile.edit'))
+                    <a href="{{ route('profile.edit') }}"
+                       class="rounded-2xl bg-white px-4 py-2 text-sm font-black text-slate-700 ring-1 ring-pink-100">
+                        Profil
                     </a>
                 @endif
             @endif

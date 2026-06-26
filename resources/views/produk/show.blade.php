@@ -1,246 +1,242 @@
 <x-app-layout>
     @php
-        $seller = $produk->user;
+        $penjual = $produk->user ?? null;
 
-        $cleanPhone = $seller && $seller->whatsapp
-            ? preg_replace('/[^0-9]/', '', $seller->whatsapp)
-            : null;
+        $namaProduk = $produk->nama ?? 'Produk';
+        $hargaProduk = $produk->harga ?? 0;
+        $stokProduk = $produk->stok ?? 0;
+        $kategoriProduk = $produk->kategori ?? '-';
+        $kondisiProduk = $produk->kondisi_label ?? (($produk->kondisi ?? 'bekas') === 'baru' ? 'Barang Baru' : 'Barang Bekas');
+        $fakultasProduk = $produk->fakultas ?? '-';
+        $deskripsiProduk = $produk->deskripsi ?? '-';
 
-        $productUrl = route('produk.show', $produk);
-        $productImageUrl = $produk->gambar_url;
+        $gambarProduk = $produk->gambar_url ?? null;
 
-        $waText = "Halo kak " . ($seller->name ?? '') . ", saya tertarik dengan produk " . $produk->nama . " di UniMart.\n\n";
-        $waText .= "Detail produk:\n" . $productUrl . "\n\n";
-
-        if ($productImageUrl) {
-            $waText .= "Gambar produk:\n" . $productImageUrl . "\n\n";
+        if (! $gambarProduk && ! empty($produk->gambar)) {
+            $gambarProduk = asset('storage/' . $produk->gambar);
         }
 
-        $waText .= "Apakah produk ini masih tersedia untuk COD?";
+        $namaPenjual = $penjual->name ?? 'Penjual';
+        $emailPenjual = $penjual->email ?? '-';
+        $fakultasPenjual = $penjual->fakultas ?? '-';
+        $whatsappPenjual = $penjual->whatsapp ?? 'Belum tersedia';
 
-        $waMessage = rawurlencode($waText);
-
-        $waUrl = $cleanPhone
-            ? "https://wa.me/{$cleanPhone}?text={$waMessage}"
-            : null;
-
-        $sellerPhoto = null;
-
-        if ($seller && ! empty($seller->foto_profil)) {
-            $sellerPhoto = asset('storage/' . $seller->foto_profil);
-        }
+        $isProdukSaya = auth()->check() && $penjual && auth()->id() === $penjual->id;
     @endphp
 
     <div class="min-h-screen bg-pink-50/40 py-10">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <a href="{{ route('produk.index') }}"
-               class="mb-6 inline-flex rounded-2xl bg-white px-5 py-3 font-extrabold text-pink-700 shadow-sm ring-1 ring-pink-100 hover:bg-pink-700 hover:text-white">
-                ← Kembali ke Produk
-            </a>
+
+            <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <p class="text-sm font-black uppercase tracking-[0.35em] text-pink-500">
+                        Detail Produk
+                    </p>
+
+                    <h1 class="mt-4 text-4xl font-black tracking-tight text-slate-900">
+                        {{ $namaProduk }}
+                    </h1>
+
+                    <p class="mt-3 text-lg font-semibold text-slate-500">
+                        Lihat informasi lengkap produk sebelum memasukkan ke keranjang.
+                    </p>
+                </div>
+
+                @if (\Illuminate\Support\Facades\Route::has('produk.index'))
+                    <a href="{{ route('produk.index') }}"
+                       class="rounded-2xl bg-white px-6 py-4 text-sm font-black text-slate-700 shadow-sm ring-1 ring-pink-100 transition hover:bg-pink-50 hover:text-pink-700">
+                        ← Kembali ke Produk
+                    </a>
+                @endif
+            </div>
 
             @if (session('success'))
-                <div class="mb-5 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 font-semibold text-green-700">
+                <div class="mb-6 rounded-3xl border border-green-200 bg-green-50 px-6 py-5 text-base font-black text-green-700">
                     {{ session('success') }}
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="mb-5 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 font-semibold text-red-700">
+                <div class="mb-6 rounded-3xl border border-red-200 bg-red-50 px-6 py-5 text-base font-black text-red-700">
                     {{ session('error') }}
                 </div>
             @endif
 
-            <div class="grid gap-8 lg:grid-cols-2">
-                <div class="space-y-6">
-                    <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-pink-100">
-                        <div class="flex min-h-[420px] items-center justify-center overflow-hidden rounded-3xl bg-slate-50">
-                            @if ($produk->gambar_url)
-                                <img src="{{ $produk->gambar_url }}"
-                                     alt="{{ $produk->nama }}"
-                                     class="max-h-[520px] w-full object-contain">
-                            @else
-                                <div class="flex h-[420px] w-full items-center justify-center text-8xl">
-                                    🛍️
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-pink-100">
-                        <h2 class="text-2xl font-black text-slate-900">Profil Penjual</h2>
-
-                        <div class="mt-6 flex flex-col gap-5 sm:flex-row sm:items-center">
-                            <div class="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-pink-700 to-slate-900 text-4xl font-black text-white">
-                                @if ($sellerPhoto)
-                                    <img src="{{ $sellerPhoto }}"
-                                         alt="{{ $seller->name }}"
-                                         class="h-full w-full object-cover">
-                                @else
-                                    {{ strtoupper(substr($seller->name ?? 'U', 0, 1)) }}
-                                @endif
-                            </div>
-
-                            <div class="flex-1">
-                                <h3 class="text-2xl font-black text-slate-900">
-                                    {{ $seller->name ?? '-' }}
-                                </h3>
-
-                                <p class="mt-1 text-sm font-semibold text-slate-500">
-                                    {{ $seller->email ?? '-' }}
-                                </p>
-
-                                <div class="mt-3 flex flex-wrap gap-2">
-                                    <span class="rounded-full bg-pink-100 px-4 py-2 text-xs font-extrabold text-pink-700">
-                                        Penjual UniMart
-                                    </span>
-
-                                    @if ($cleanPhone)
-                                        <span class="rounded-full bg-green-100 px-4 py-2 text-xs font-extrabold text-green-700">
-                                            WhatsApp tersedia
-                                        </span>
-                                    @else
-                                        <span class="rounded-full bg-red-100 px-4 py-2 text-xs font-extrabold text-red-700">
-                                            WhatsApp belum tersedia
-                                        </span>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-6 rounded-2xl bg-slate-50 p-5">
-                            <h4 class="font-extrabold text-slate-900">Bio Penjual</h4>
-                            <p class="mt-2 leading-7 text-slate-600">
-                                {{ $seller->bio ?: 'Penjual belum menambahkan bio.' }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="h-fit rounded-3xl bg-white p-6 shadow-sm ring-1 ring-pink-100 lg:sticky lg:top-6">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span class="rounded-full bg-pink-100 px-4 py-2 text-xs font-extrabold text-pink-700">
-                            {{ $produk->kategori }}
-                        </span>
-
-                        <span class="rounded-full bg-blue-100 px-4 py-2 text-xs font-extrabold text-blue-700">
-                            {{ $produk->kondisi_label ?? ($produk->kondisi === 'baru' ? 'Barang Baru' : 'Barang Bekas') }}
-                        </span>
-
-                        <span class="rounded-full bg-slate-100 px-4 py-2 text-xs font-extrabold text-slate-700">
-                            {{ $produk->fakultas }}
-                        </span>
-
-                        <span class="ml-auto rounded-full px-4 py-2 text-xs font-extrabold {{ $produk->aktif ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                            {{ $produk->aktif ? 'Tersedia' : 'Tidak Aktif' }}
-                        </span>
-                    </div>
-
-                    <h1 class="mt-8 text-4xl font-black leading-tight text-slate-900">
-                        {{ $produk->nama }}
-                    </h1>
-
-                    <p class="mt-6 text-5xl font-black text-pink-700">
-                        Rp {{ number_format($produk->harga, 0, ',', '.') }}
-                    </p>
-
-                    <div class="mt-8 grid gap-4 rounded-3xl bg-slate-50 p-5">
-                        <div class="flex items-center justify-between gap-4">
-                            <span class="text-slate-600">Stok</span>
-                            <span class="font-black text-slate-900">{{ $produk->stok }}</span>
-                        </div>
-
-                        <div class="flex items-center justify-between gap-4">
-                            <span class="text-slate-600">Kondisi</span>
-                            <span class="font-black text-slate-900">
-                                {{ $produk->kondisi_label ?? ($produk->kondisi === 'baru' ? 'Barang Baru' : 'Barang Bekas') }}
-                            </span>
-                        </div>
-
-                        <div class="flex items-center justify-between gap-4">
-                            <span class="text-slate-600">Fakultas</span>
-                            <span class="font-black text-slate-900">{{ $produk->fakultas }}</span>
-                        </div>
-
-                        <div class="flex items-center justify-between gap-4">
-                            <span class="text-slate-600">Penjual</span>
-                            <span class="text-right font-black text-slate-900">{{ $seller->name ?? '-' }}</span>
-                        </div>
-                    </div>
-
-                    <div class="mt-8">
-                        <h2 class="text-2xl font-black text-slate-900">Deskripsi Produk</h2>
-                        <p class="mt-4 leading-8 text-slate-600">
-                            {{ $produk->deskripsi ?: 'Produk ini belum memiliki deskripsi.' }}
-                        </p>
-                    </div>
-
-                    <div class="mt-8 space-y-3">
-                        @if ((int) $produk->user_id === (int) auth()->id())
-                            <div class="rounded-2xl border border-yellow-200 bg-yellow-50 p-4 font-semibold text-yellow-700">
-                                Ini adalah produk milik kamu. Produk sendiri tidak bisa dimasukkan ke keranjang.
-                            </div>
-
-                            <div class="grid gap-3 sm:grid-cols-2">
-                                <a href="{{ route('produk.edit', $produk) }}"
-                                   class="rounded-2xl bg-yellow-500 px-6 py-4 text-center font-extrabold text-white hover:bg-yellow-600">
-                                    Edit Produk
-                                </a>
-
-                                <form action="{{ route('produk.destroy', $produk) }}" method="POST"
-                                      onsubmit="return confirm('Hapus produk ini?')">
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button type="submit"
-                                            class="w-full rounded-2xl bg-red-600 px-6 py-4 font-extrabold text-white hover:bg-red-700">
-                                        Hapus Produk
-                                    </button>
-                                </form>
-                            </div>
+            <div class="grid gap-8 lg:grid-cols-[1fr_460px]">
+                <section class="overflow-hidden rounded-[2rem] bg-white shadow-sm ring-1 ring-pink-100">
+                    <div class="flex min-h-[420px] items-center justify-center bg-slate-50 p-8">
+                        @if ($gambarProduk)
+                            <img src="{{ $gambarProduk }}"
+                                 alt="{{ $namaProduk }}"
+                                 class="max-h-[520px] w-full rounded-[1.5rem] object-contain">
                         @else
-                            @if ($produk->aktif && (int) $produk->stok > 0)
-                                <form action="{{ route('keranjang.tambah', $produk) }}" method="POST">
-                                    @csrf
+                            <div class="flex h-[360px] w-full flex-col items-center justify-center rounded-[1.5rem] bg-pink-50 text-center text-pink-700">
+                                <div class="text-7xl">🛍️</div>
 
-                                    <div class="mb-3">
-                                        <label class="mb-2 block font-extrabold text-slate-900">Jumlah</label>
-                                        <input type="number"
-                                               name="jumlah"
-                                               value="1"
-                                               min="1"
-                                               max="{{ $produk->stok }}"
-                                               class="w-28 rounded-2xl border-slate-200 text-center focus:border-pink-500 focus:ring-pink-500">
-                                    </div>
-
-                                    <button type="submit"
-                                            class="w-full rounded-2xl bg-gradient-to-r from-slate-900 to-pink-700 px-6 py-4 font-extrabold text-white hover:from-pink-700 hover:to-slate-900">
-                                        Tambah ke Keranjang
-                                    </button>
-                                </form>
-                            @else
-                                <div class="rounded-2xl border border-red-200 bg-red-50 p-4 font-semibold text-red-700">
-                                    Produk sedang tidak tersedia atau stok habis.
-                                </div>
-                            @endif
-
-                            @if ($waUrl)
-                                <a href="{{ $waUrl }}"
-                                   target="_blank"
-                                   class="block w-full rounded-2xl bg-green-600 px-6 py-4 text-center font-extrabold text-white hover:bg-green-700">
-                                    Hubungi Penjual via WhatsApp
-                                </a>
-                            @else
-                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center font-semibold text-slate-500">
-                                    Penjual belum menambahkan nomor WhatsApp.
-                                </div>
-                            @endif
+                                <p class="mt-4 text-lg font-black">
+                                    Gambar belum tersedia
+                                </p>
+                            </div>
                         @endif
                     </div>
 
-                    <div class="mt-6 rounded-2xl bg-pink-50 p-4 text-sm font-semibold leading-6 text-slate-600">
-                        Tips: Simpan produk ke keranjang dulu jika belum ingin langsung checkout. Saat checkout, kamu bisa memilih produk mana saja yang ingin dibeli.
+                    <div class="p-8 lg:p-10">
+                        <div class="flex flex-wrap gap-3">
+                            <span class="rounded-full bg-pink-100 px-5 py-2 text-sm font-black text-pink-700">
+                                {{ $kategoriProduk }}
+                            </span>
+
+                            <span class="rounded-full bg-blue-100 px-5 py-2 text-sm font-black text-blue-700">
+                                {{ $kondisiProduk }}
+                            </span>
+
+                            <span class="rounded-full bg-slate-100 px-5 py-2 text-sm font-black text-slate-700">
+                                {{ $fakultasProduk }}
+                            </span>
+
+                            <span class="rounded-full bg-green-100 px-5 py-2 text-sm font-black text-green-700">
+                                {{ $stokProduk > 0 ? 'Tersedia' : 'Stok Habis' }}
+                            </span>
+                        </div>
+
+                        <h2 class="mt-8 text-4xl font-black leading-tight tracking-tight text-slate-900">
+                            {{ $namaProduk }}
+                        </h2>
+
+                        <p class="mt-5 text-5xl font-black tracking-tight text-pink-700">
+                            Rp {{ number_format($hargaProduk, 0, ',', '.') }}
+                        </p>
+
+                        <div class="mt-8 grid gap-4 md:grid-cols-3">
+                            <div class="rounded-3xl bg-pink-50 p-5">
+                                <p class="text-sm font-black text-slate-500">
+                                    Stok
+                                </p>
+
+                                <p class="mt-2 text-2xl font-black text-slate-900">
+                                    {{ $stokProduk }}
+                                </p>
+                            </div>
+
+                            <div class="rounded-3xl bg-pink-50 p-5">
+                                <p class="text-sm font-black text-slate-500">
+                                    Kondisi
+                                </p>
+
+                                <p class="mt-2 text-2xl font-black text-slate-900">
+                                    {{ $kondisiProduk }}
+                                </p>
+                            </div>
+
+                            <div class="rounded-3xl bg-pink-50 p-5">
+                                <p class="text-sm font-black text-slate-500">
+                                    Fakultas
+                                </p>
+
+                                <p class="mt-2 text-2xl font-black text-slate-900">
+                                    {{ $fakultasProduk }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-8">
+                            <h3 class="text-2xl font-black text-slate-900">
+                                Deskripsi Produk
+                            </h3>
+
+                            <p class="mt-4 whitespace-pre-line text-lg leading-8 text-slate-600">
+                                {{ $deskripsiProduk }}
+                            </p>
+                        </div>
                     </div>
-                </div>
+                </section>
+
+                <aside class="h-fit rounded-[2rem] bg-white p-8 shadow-sm ring-1 ring-pink-100">
+                    <h2 class="text-3xl font-black tracking-tight text-slate-900">
+                        Informasi Penjual
+                    </h2>
+
+                    <div class="mt-7 flex items-center gap-4">
+                        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-pink-700 to-slate-950 text-2xl font-black text-white">
+                            {{ strtoupper(substr($namaPenjual, 0, 1)) }}
+                        </div>
+
+                        <div>
+                            <p class="text-xl font-black text-slate-900">
+                                {{ $namaPenjual }}
+                            </p>
+
+                            <p class="mt-1 text-sm font-bold text-slate-500">
+                                {{ $emailPenjual }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mt-7 space-y-4">
+                        <div class="rounded-3xl bg-pink-50 p-5">
+                            <p class="text-sm font-black text-slate-500">
+                                WhatsApp
+                            </p>
+
+                            <p class="mt-2 text-lg font-black text-pink-700">
+                                {{ $whatsappPenjual }}
+                            </p>
+                        </div>
+
+                        <div class="rounded-3xl bg-pink-50 p-5">
+                            <p class="text-sm font-black text-slate-500">
+                                Fakultas Penjual
+                            </p>
+
+                            <p class="mt-2 text-lg font-black text-slate-900">
+                                {{ $fakultasPenjual }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 space-y-4">
+                        @if (! $isProdukSaya)
+                            @if ($stokProduk > 0)
+                                @if (\Illuminate\Support\Facades\Route::has('keranjang.store'))
+                                    <form method="POST" action="{{ route('keranjang.store', $produk) }}">
+                                        @csrf
+
+                                        <button type="submit"
+                                                class="flex w-full items-center justify-center rounded-3xl bg-pink-600 px-6 py-4 text-base font-black text-white shadow-sm transition hover:bg-pink-700">
+                                            + Masukkan Keranjang
+                                        </button>
+                                    </form>
+                                @else
+                                    <button type="button"
+                                            disabled
+                                            class="flex w-full cursor-not-allowed items-center justify-center rounded-3xl bg-slate-300 px-6 py-4 text-base font-black text-white">
+                                        Keranjang Belum Tersedia
+                                    </button>
+                                @endif
+                            @else
+                                <button type="button"
+                                        disabled
+                                        class="flex w-full cursor-not-allowed items-center justify-center rounded-3xl bg-slate-300 px-6 py-4 text-base font-black text-white">
+                                    Stok Produk Habis
+                                </button>
+                            @endif
+                        @else
+                            @if (\Illuminate\Support\Facades\Route::has('produk.edit'))
+                                <a href="{{ route('produk.edit', $produk) }}"
+                                   class="flex w-full items-center justify-center rounded-3xl bg-yellow-400 px-6 py-4 text-base font-black text-white shadow-sm transition hover:bg-yellow-500">
+                                    Edit Produk
+                                </a>
+                            @endif
+
+                            @if (\Illuminate\Support\Facades\Route::has('produk.saya'))
+                                <a href="{{ route('produk.saya') }}"
+                                   class="flex w-full items-center justify-center rounded-3xl bg-slate-950 px-6 py-4 text-base font-black text-white shadow-sm transition hover:bg-pink-700">
+                                    Kembali ke Produk Saya
+                                </a>
+                            @endif
+                        @endif
+                    </div>
+                </aside>
             </div>
         </div>
     </div>
