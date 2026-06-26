@@ -178,3 +178,59 @@ Route::middleware(['auth', 'is_admin'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
+Route::patch('/pesanan-masuk/{pesanan}/terima-final', function (\Illuminate\Http\Request $request, \App\Models\Pesanan $pesanan) {
+    $user = $request->user();
+
+    if (\Illuminate\Support\Facades\Schema::hasColumn('pesanans', 'penjual_id') && (int) $pesanan->penjual_id !== (int) $user->id) {
+        abort(403);
+    }
+
+    if (\Illuminate\Support\Facades\Schema::hasColumn('pesanans', 'seller_id') && (int) $pesanan->seller_id !== (int) $user->id) {
+        abort(403);
+    }
+
+    $pesanan->status = 'accepted';
+    $pesanan->save();
+
+    return back()->with('success', 'Pesanan berhasil diterima.');
+})->middleware('auth')->name('pesanan.masuk.terima.final');
+
+Route::patch('/pesanan-masuk/{pesanan}/tolak-final', function (\Illuminate\Http\Request $request, \App\Models\Pesanan $pesanan) {
+    $user = $request->user();
+
+    if (\Illuminate\Support\Facades\Schema::hasColumn('pesanans', 'penjual_id') && (int) $pesanan->penjual_id !== (int) $user->id) {
+        abort(403);
+    }
+
+    if (\Illuminate\Support\Facades\Schema::hasColumn('pesanans', 'seller_id') && (int) $pesanan->seller_id !== (int) $user->id) {
+        abort(403);
+    }
+
+    $pesanan->status = 'rejected';
+    $pesanan->save();
+
+    return back()->with('success', 'Pesanan berhasil ditolak.');
+})->middleware('auth')->name('pesanan.masuk.tolak.final');
+
+Route::patch('/pesanan-masuk/{pesanan}/selesai-final', function (\Illuminate\Http\Request $request, \App\Models\Pesanan $pesanan) {
+    $user = $request->user();
+
+    if (\Illuminate\Support\Facades\Schema::hasColumn('pesanans', 'penjual_id') && (int) $pesanan->penjual_id !== (int) $user->id) {
+        abort(403);
+    }
+
+    if (\Illuminate\Support\Facades\Schema::hasColumn('pesanans', 'seller_id') && (int) $pesanan->seller_id !== (int) $user->id) {
+        abort(403);
+    }
+
+    $statusSaatIni = strtolower((string) ($pesanan->status ?? 'pending'));
+
+    if (! in_array($statusSaatIni, ['accepted', 'diterima', 'approved', 'disetujui'])) {
+        return back()->with('error', 'Pesanan belum bisa diselesaikan karena belum diterima.');
+    }
+
+    $pesanan->status = 'completed';
+    $pesanan->save();
+
+    return back()->with('success', 'Pesanan berhasil dikonfirmasi selesai.');
+})->middleware('auth')->name('pesanan.masuk.selesai.final');

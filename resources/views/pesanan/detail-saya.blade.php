@@ -27,6 +27,11 @@
             'disetujui',
         ]);
 
+        $sudahSelesai = in_array($statusAsli, [
+            'completed',
+            'selesai',
+        ]);
+
         $items = collect();
 
         if (isset($pesanan->items)) {
@@ -129,6 +134,18 @@
                 @endif
             </div>
 
+            @if (session('success'))
+                <div class="mb-6 rounded-3xl border border-green-200 bg-green-50 px-6 py-5 text-base font-black text-green-700">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="mb-6 rounded-3xl border border-red-200 bg-red-50 px-6 py-5 text-base font-black text-red-700">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <section class="rounded-[2rem] bg-white p-8 shadow-sm ring-1 ring-pink-100 lg:p-10">
                 <div class="flex flex-wrap items-start justify-between gap-6">
                     <div>
@@ -185,17 +202,53 @@
 
                     <div class="mt-6">
                         @if ($bolehHubungiPenjual && $nomorWa)
-                            <a href="{{ $linkWa }}"
-                               target="_blank"
-                               rel="noopener noreferrer"
-                               onclick="navigator.clipboard && navigator.clipboard.writeText(@js($pesanWa));"
-                               class="inline-flex items-center justify-center rounded-3xl bg-green-600 px-7 py-4 text-base font-black text-white shadow-sm transition hover:bg-green-700">
-                                Hubungi Penjual via WhatsApp
-                            </a>
+                            <div class="flex flex-wrap gap-4">
+                                <a href="{{ $linkWa }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   onclick="navigator.clipboard && navigator.clipboard.writeText(@js($pesanWa));"
+                                   class="inline-flex items-center justify-center rounded-3xl bg-green-600 px-7 py-4 text-base font-black text-white shadow-sm transition hover:bg-green-700">
+                                    Hubungi Penjual via WhatsApp
+                                </a>
+
+                                @if (\Illuminate\Support\Facades\Route::has('pesanan.selesai'))
+                                    <form method="POST"
+                                          action="{{ route('pesanan.selesai', $pesanan) }}"
+                                          onsubmit="return confirm('Yakin pesanan ini sudah selesai?')">
+                                        @csrf
+                                        @method('PATCH')
+
+                                        <button type="submit"
+                                                class="inline-flex items-center justify-center rounded-3xl bg-slate-950 px-7 py-4 text-base font-black text-white shadow-sm transition hover:bg-pink-700">
+                                            Konfirmasi Pesanan Selesai
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+
+                            <div class="mt-5 rounded-3xl border border-green-200 bg-green-50 px-6 py-5">
+                                <p class="text-base font-black text-green-700">
+                                    Pesanan sudah diterima penjual.
+                                </p>
+
+                                <p class="mt-2 text-sm font-semibold leading-6 text-green-700">
+                                    Lanjutkan komunikasi untuk COD. Setelah transaksi selesai, klik tombol Konfirmasi Pesanan Selesai.
+                                </p>
+                            </div>
                         @elseif ($bolehHubungiPenjual && ! $nomorWa)
                             <div class="rounded-3xl border border-slate-200 bg-white px-6 py-5">
                                 <p class="text-base font-black text-slate-700">
                                     Nomor WhatsApp penjual belum tersedia.
+                                </p>
+                            </div>
+                        @elseif ($sudahSelesai)
+                            <div class="rounded-3xl border border-blue-200 bg-blue-50 px-6 py-5">
+                                <p class="text-base font-black text-blue-700">
+                                    Pesanan selesai.
+                                </p>
+
+                                <p class="mt-2 text-sm font-semibold leading-6 text-blue-700">
+                                    Transaksi ini sudah dikonfirmasi selesai oleh pembeli.
                                 </p>
                             </div>
                         @elseif ($statusAsli === 'pending')
