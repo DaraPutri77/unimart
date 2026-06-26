@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
     @php
         $statusAsli = strtolower((string) ($pesanan->status ?? 'pending'));
 
@@ -363,4 +363,20 @@
             </section>
         </div>
     </div>
+
+                    @if(!empty($pesanan->rating))
+                        <div class="mt-5 rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
+                            <p class="text-sm font-bold text-slate-900">Rating dari Pembeli</p>
+                            <p class="mt-1 text-lg font-bold text-yellow-600">
+                                {!! str_repeat('&#9733;', (int) $pesanan->rating) !!}{!! str_repeat('&#9734;', max(0, 5 - (int) $pesanan->rating)) !!}
+                                <span class="ml-2 text-sm text-slate-600">({{ $pesanan->rating }}/5)</span>
+                            </p>
+
+                            @if(!empty($pesanan->ulasan))
+                                <p class="mt-2 text-sm text-slate-700">"{{ $pesanan->ulasan }}"</p>
+                            @endif
+                        </div>
+                    @endif
 </x-app-layout>
+
+

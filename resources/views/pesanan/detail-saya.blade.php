@@ -1,4 +1,41 @@
-<x-app-layout>
+﻿<x-app-layout>
+<style id="pesanan-detail-rating-fix">
+    main a[href*="wa.me"],
+    main a[href*="api.whatsapp.com"] {
+        width: auto !important;
+        max-width: fit-content !important;
+        min-width: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 14px 28px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 18px !important;
+        line-height: 1.2 !important;
+        align-self: flex-start !important;
+    }
+
+    main form[action*="selesai"] {
+        width: 100% !important;
+        max-width: 560px !important;
+        display: block !important;
+        margin-top: 16px !important;
+    }
+
+    main form[action*="selesai"] button[type="submit"] {
+        width: auto !important;
+        max-width: fit-content !important;
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 14px 28px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 18px !important;
+        line-height: 1.2 !important;
+    }
+</style>
     @php
         $statusAsli = strtolower((string) ($pesanan->status ?? 'pending'));
 
@@ -216,6 +253,29 @@
                                           action="{{ route('pesanan.selesai', $pesanan) }}"
                                           onsubmit="return confirm('Yakin pesanan ini sudah selesai?')">
                                         @csrf
+                            <div class="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
+                                <label class="mb-2 block text-sm font-semibold text-slate-700">
+                                    Rating Penjual
+                                </label>
+
+                                <select name="rating" required
+                                    class="w-full rounded-xl border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                    <option value="">Pilih rating sebelum menyelesaikan pesanan</option>
+                                    <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; - Sangat Baik</option>
+                                    <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; - Baik</option>
+                                    <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; - Cukup</option>
+                                    <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; - Kurang</option>
+                                    <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; - Buruk</option>
+                                </select>
+
+                                <textarea name="ulasan" rows="2"
+                                    class="mt-3 w-full rounded-xl border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                                    placeholder="Tulis ulasan singkat, boleh dikosongkan."></textarea>
+
+                                @error('rating')
+                                    <p class="mt-2 text-xs font-semibold text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
                                         @method('PATCH')
 
                                         <button type="submit"
@@ -376,3 +436,6 @@
         </div>
     </div>
 </x-app-layout>
+
+
+

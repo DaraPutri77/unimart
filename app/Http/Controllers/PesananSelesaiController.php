@@ -11,37 +11,45 @@ class PesananSelesaiController extends Controller
 {
     public function __invoke(Request $request, Pesanan $pesanan): RedirectResponse
     {
-        $user = $request->user();
+        $request->validate([
+            'rating' => ['required', 'integer', 'min:1', 'max:5'],
+            'ulasan' => ['nullable', 'string', 'max:500'],
+        ], [
+            'rating.required' => 'Rating wajib dipilih sebelum menyelesaikan pesanan.',
+        ]);
 
-        $kolomPembeli = null;
+        $userId = $request->user()->id;
 
-        foreach (['pembeli_id', 'buyer_id', 'user_id'] as $kolom) {
-            if (Schema::hasColumn('pesanans', $kolom)) {
-                $kolomPembeli = $kolom;
+        $isPembeli = false;
+
+        foreach (['pembeli_id', 'buyer_id', 'user_id'] as $column) {
+            if (Schema::hasColumn('pesanans', $column) && (int) $pesanan->{$column} === (int) $userId) {
+                $isPembeli = true;
                 break;
             }
         }
 
-        if ($kolomPembeli && (int) $pesanan->{$kolomPembeli} !== (int) $user->id) {
-            abort(403);
+        abort_if(! $isPembeli, 403);
+
+        $status = strtolower((string) $pesanan->status);
+
+        if (! in_array($status, ['accepted', 'diterima', 'approved', 'disetujui'], true)) {
+            return back()->with('error', 'Pesanan hanya bisa diselesaikan setelah diterima penjual.');
         }
 
-        $statusSaatIni = strtolower((string) ($pesanan->status ?? 'pending'));
+        if (Schema::hasColumn('pesanans', 'rating')) {
+            $pesanan->rating = $request->integer('rating');
+        }
 
-        $bolehDiselesaikan = in_array($statusSaatIni, [
-            'accepted',
-            'diterima',
-            'approved',
-            'disetujui',
-        ]);
-
-        if (! $bolehDiselesaikan) {
-            return back()->with('error', 'Pesanan belum bisa diselesaikan karena belum diterima penjual.');
+        if (Schema::hasColumn('pesanans', 'ulasan')) {
+            $pesanan->ulasan = $request->input('ulasan');
         }
 
         $pesanan->status = 'completed';
         $pesanan->save();
 
-        return back()->with('success', 'Pesanan berhasil dikonfirmasi selesai.');
+        return redirect()
+            ->route('pesanan.saya')
+            ->with('success', 'Pesanan selesai. Terima kasih sudah memberikan rating.');
     }
 }

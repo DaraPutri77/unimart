@@ -234,3 +234,7 @@ Route::patch('/pesanan-masuk/{pesanan}/selesai-final', function (\Illuminate\Htt
 
     return back()->with('success', 'Pesanan berhasil dikonfirmasi selesai.');
 })->middleware('auth')->name('pesanan.masuk.selesai.final');
+
+Route::patch('/pesanan-saya/{pesanan}/selesai', \App\Http\Controllers\PesananSelesaiController::class)
+    ->middleware('auth')
+    ->name('pesanan.selesai');

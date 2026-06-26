@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
     <div class="min-h-screen bg-pink-50/40 py-10">
         <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div class="mb-8">
@@ -43,6 +43,13 @@
                                 Jumlah item:
                                 <span class="font-semibold">{{ $pesanan->items->count() }}</span>
                             </p>
+                            @if(!empty($pesanan->rating))
+                                <p class="mt-2 text-sm font-bold text-yellow-600">
+                                    Rating:
+                                    {!! str_repeat('&#9733;', (int) $pesanan->rating) !!}{!! str_repeat('&#9734;', max(0, 5 - (int) $pesanan->rating)) !!}
+                                    <span class="text-slate-500">({{ $pesanan->rating }}/5)</span>
+                                </p>
+                            @endif
                         </div>
 
                         <div class="text-left md:text-right">
@@ -60,7 +67,7 @@
                 </div>
             @empty
                 <div class="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-pink-100">
-                    <div class="text-6xl">📦</div>
+                    <div class="text-6xl">ðŸ“¦</div>
                     <h2 class="mt-4 text-2xl font-extrabold text-slate-900">Belum ada pesanan masuk</h2>
                     <p class="mt-2 text-slate-600">Pesanan dari pembeli akan tampil di sini.</p>
                     <a href="{{ route('produk.saya') }}"
