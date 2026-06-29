@@ -28,9 +28,6 @@
       "dest": "/robots.txt"
     },
     {
-      "handle": "filesystem"
-    },
-    {
       "src": "/(.*)",
       "dest": "/api/index.php"
     }
