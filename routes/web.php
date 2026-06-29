@@ -13,6 +13,10 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/dashboard', function () {
+    if (auth()->user()?->is_admin) {
+        return redirect()->route('admin.dashboard');
+    }
+
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -178,6 +182,7 @@ Route::middleware(['auth', 'is_admin'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
 Route::patch('/pesanan-masuk/{pesanan}/terima-final', function (\Illuminate\Http\Request $request, \App\Models\Pesanan $pesanan) {
     $user = $request->user();
 

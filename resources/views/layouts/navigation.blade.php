@@ -3,6 +3,16 @@
         $user = auth()->user();
         $isAdmin = (bool) ($user->is_admin ?? false);
 
+        $dashboardRoute = $isAdmin && \Illuminate\Support\Facades\Route::has('admin.dashboard')
+            ? 'admin.dashboard'
+            : 'dashboard';
+
+        $dashboardLabel = $isAdmin ? 'Admin Panel' : 'Dashboard';
+
+        $isDashboardAktif = $isAdmin
+            ? request()->routeIs('admin.*')
+            : request()->routeIs('dashboard');
+
         $namaLengkap = trim($user->name ?? 'User');
         $namaParts = preg_split('/\s+/', $namaLengkap);
         $namaDepan = $isAdmin ? 'Admin' : ($namaParts[0] ?? 'User');
@@ -46,7 +56,7 @@
 
     <div class="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
         <div class="flex min-h-[86px] items-center justify-between gap-4">
-            <a href="{{ route('dashboard') }}" class="flex shrink-0 items-center gap-3">
+            <a href="{{ route($dashboardRoute) }}" class="flex shrink-0 items-center gap-3">
                 <x-application-logo />
 
                 <div>
@@ -61,10 +71,10 @@
             </a>
 
             <div class="hidden items-center gap-1 lg:flex">
-                <a href="{{ route('dashboard') }}"
+                <a href="{{ route($dashboardRoute) }}"
                    class="inline-flex items-center justify-center rounded-2xl px-4 py-3 text-sm font-black transition
-                   {{ request()->routeIs('dashboard') ? 'bg-pink-100 text-pink-700' : 'text-slate-700 hover:bg-pink-50 hover:text-pink-700' }}">
-                    Dashboard
+                   {{ $isDashboardAktif ? 'bg-pink-100 text-pink-700' : 'text-slate-700 hover:bg-pink-50 hover:text-pink-700' }}">
+                    {{ $dashboardLabel }}
                 </a>
 
                 @if (! $isAdmin)
@@ -155,10 +165,10 @@
         </div>
 
         <div class="flex flex-wrap gap-2 pb-4 lg:hidden">
-            <a href="{{ route('dashboard') }}"
+            <a href="{{ route($dashboardRoute) }}"
                class="rounded-2xl px-4 py-2 text-sm font-black
-               {{ request()->routeIs('dashboard') ? 'bg-pink-100 text-pink-700' : 'bg-white text-slate-700 ring-1 ring-pink-100' }}">
-                Dashboard
+               {{ $isDashboardAktif ? 'bg-pink-100 text-pink-700' : 'bg-white text-slate-700 ring-1 ring-pink-100' }}">
+                {{ $dashboardLabel }}
             </a>
 
             @if (! $isAdmin)
