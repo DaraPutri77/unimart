@@ -16,6 +16,10 @@
       "dest": "/build/$1"
     },
     {
+      "src": "/images/(.*)",
+      "dest": "/images/$1"
+    },
+    {
       "src": "/demo-products/(.*)",
       "dest": "/demo-products/$1"
     },
