@@ -4,9 +4,33 @@
 
         $fotoProfil = null;
 
-        if (! empty($user->foto_profil)) {
-            $fotoProfil = asset('storage/' . $user->foto_profil);
+        if (! empty($user->foto_profil_url)) {
+            $fotoProfil = $user->foto_profil_url;
+        } elseif (! empty($user->foto_profil)) {
+            if (
+                str_starts_with($user->foto_profil, 'http://') ||
+                str_starts_with($user->foto_profil, 'https://')
+            ) {
+                $fotoProfil = $user->foto_profil;
+            } else {
+                $publicStorageUrl = rtrim((string) env('SUPABASE_PUBLIC_STORAGE_URL'), '/');
+
+                if ($publicStorageUrl !== '') {
+                    $fotoProfil = $publicStorageUrl . '/' . ltrim($user->foto_profil, '/');
+                } else {
+                    $supabaseUrl = rtrim((string) env('SUPABASE_URL'), '/');
+                    $bucket = trim((string) env('SUPABASE_STORAGE_BUCKET', 'unimart'));
+
+                    if ($supabaseUrl !== '') {
+                        $fotoProfil = $supabaseUrl . '/storage/v1/object/public/' . $bucket . '/' . ltrim($user->foto_profil, '/');
+                    } else {
+                        $fotoProfil = asset('storage/' . ltrim($user->foto_profil, '/'));
+                    }
+                }
+            }
         }
+
+        $inisialProfil = strtoupper(substr($user->name ?? 'U', 0, 1));
     @endphp
 
     <div class="min-h-screen bg-pink-50/40 py-10">
@@ -31,13 +55,28 @@
                 </div>
             @endif
 
+            @if (session('success'))
+                <div class="mb-5 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 font-semibold text-green-700">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             <div class="grid gap-8 lg:grid-cols-[0.9fr_1.7fr]">
                 <div class="h-fit rounded-3xl bg-white p-8 text-center shadow-sm ring-1 ring-pink-100">
                     <div class="mx-auto flex h-40 w-40 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-pink-700 to-slate-900 text-6xl font-black text-white ring-8 ring-pink-50">
                         @if ($fotoProfil)
-                            <img src="{{ $fotoProfil }}" alt="{{ $user->name }}" class="h-full w-full object-cover">
+                            <img
+                                src="{{ $fotoProfil }}"
+                                alt="{{ $user->name }}"
+                                class="h-full w-full object-cover"
+                                onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.classList.add('flex');"
+                            >
+
+                            <div class="hidden h-full w-full items-center justify-center bg-gradient-to-br from-pink-700 to-slate-900 text-6xl font-black text-white">
+                                {{ $inisialProfil }}
+                            </div>
                         @else
-                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                            {{ $inisialProfil }}
                         @endif
                     </div>
 
@@ -152,7 +191,20 @@
                                            onchange="showSelectedFileName(event)">
                                 </label>
 
+                                @if ($fotoProfil)
+                                    <label class="mt-4 flex items-center gap-2 text-sm font-semibold text-slate-600">
+                                        <input
+                                            type="checkbox"
+                                            name="hapus_foto_profil"
+                                            value="1"
+                                            class="rounded border-slate-300 text-pink-600 shadow-sm focus:ring-pink-500"
+                                        >
+                                        Hapus foto profil saat ini
+                                    </label>
+                                @endif
+
                                 <x-input-error :messages="$errors->get('foto_profil')" class="mt-2" />
+                                <x-input-error :messages="$errors->get('hapus_foto_profil')" class="mt-2" />
                             </div>
 
                             <button type="submit"

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -54,6 +53,13 @@ class User extends Authenticatable
 
         if ($publicStorageUrl !== '') {
             return $publicStorageUrl . '/' . ltrim($this->foto_profil, '/');
+        }
+
+        $supabaseUrl = rtrim((string) env('SUPABASE_URL'), '/');
+        $bucket = trim((string) env('SUPABASE_STORAGE_BUCKET', 'unimart'));
+
+        if ($supabaseUrl !== '') {
+            return $supabaseUrl . '/storage/v1/object/public/' . $bucket . '/' . ltrim($this->foto_profil, '/');
         }
 
         return asset('storage/' . ltrim($this->foto_profil, '/'));

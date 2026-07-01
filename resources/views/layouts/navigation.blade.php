@@ -36,7 +36,14 @@
                     if ($publicStorageUrl !== '') {
                         $fotoProfilUrl = $publicStorageUrl . '/' . ltrim($user->foto_profil, '/');
                     } else {
-                        $fotoProfilUrl = asset('storage/' . ltrim($user->foto_profil, '/'));
+                        $supabaseUrl = rtrim((string) env('SUPABASE_URL'), '/');
+                        $bucket = trim((string) env('SUPABASE_STORAGE_BUCKET', 'unimart'));
+
+                        if ($supabaseUrl !== '') {
+                            $fotoProfilUrl = $supabaseUrl . '/storage/v1/object/public/' . $bucket . '/' . ltrim($user->foto_profil, '/');
+                        } else {
+                            $fotoProfilUrl = asset('storage/' . ltrim($user->foto_profil, '/'));
+                        }
                     }
                 }
             }
@@ -177,7 +184,12 @@
                         src="{{ $fotoProfilUrl }}"
                         alt="{{ $namaLengkap }}"
                         class="h-11 w-11 rounded-full border-2 border-pink-100 object-cover shadow-sm"
+                        onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.classList.add('flex');"
                     >
+
+                    <div class="hidden h-11 w-11 items-center justify-center rounded-full border-2 border-pink-100 bg-pink-100 text-sm font-black text-pink-700 shadow-sm">
+                        {{ $inisialProfil }}
+                    </div>
                 @else
                     <div class="flex h-11 w-11 items-center justify-center rounded-full border-2 border-pink-100 bg-pink-100 text-sm font-black text-pink-700 shadow-sm">
                         {{ $inisialProfil }}
