@@ -12,6 +12,40 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+/*
+|--------------------------------------------------------------------------
+| STORAGE REDIRECT - SUPABASE STORAGE
+|--------------------------------------------------------------------------
+| Ini untuk menangani gambar yang masih dipanggil lewat /storage/produk/...
+| Di Vercel, file upload tidak boleh disimpan ke storage lokal.
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/storage/{path}', function (string $path) {
+    $path = ltrim($path, '/');
+
+    if ($path === '') {
+        abort(404);
+    }
+
+    if (str_starts_with($path, 'demo-products/')) {
+        return redirect()->to(asset($path));
+    }
+
+    $publicStorageUrl = rtrim((string) env('SUPABASE_PUBLIC_STORAGE_URL'), '/');
+
+    if ($publicStorageUrl === '') {
+        $supabaseUrl = rtrim((string) env('SUPABASE_URL'), '/');
+        $bucket = trim((string) env('SUPABASE_STORAGE_BUCKET', 'unimart'));
+
+        abort_unless($supabaseUrl !== '', 404);
+
+        $publicStorageUrl = $supabaseUrl . '/storage/v1/object/public/' . $bucket;
+    }
+
+    return redirect()->away($publicStorageUrl . '/' . $path);
+})->where('path', '.*')->name('storage.supabase');
+
 Route::get('/dashboard', function () {
     if (auth()->user()?->is_admin) {
         return redirect()->route('admin.dashboard');
@@ -41,7 +75,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
-
 
     /*
     |--------------------------------------------------------------------------
@@ -81,7 +114,6 @@ Route::middleware(['auth'])->group(function () {
         ->whereNumber('produk')
         ->name('produk.destroy');
 
-
     /*
     |--------------------------------------------------------------------------
     | KERANJANG
@@ -110,7 +142,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/keranjang', [KeranjangController::class, 'clear'])
         ->name('keranjang.clear');
 
-
     /*
     |--------------------------------------------------------------------------
     | CHECKOUT COD
@@ -119,7 +150,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/checkout', [BuyerPesananController::class, 'checkout'])
         ->name('checkout.store');
-
 
     /*
     |--------------------------------------------------------------------------
@@ -142,7 +172,6 @@ Route::middleware(['auth'])->group(function () {
         ->whereNumber('pesanan')
         ->name('pesanan.complete');
 
-
     /*
     |--------------------------------------------------------------------------
     | PESANAN MASUK - SELLER
@@ -164,7 +193,6 @@ Route::middleware(['auth'])->group(function () {
         ->whereNumber('pesanan')
         ->name('pesanan.reject');
 });
-
 
 /*
 |--------------------------------------------------------------------------

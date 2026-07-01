@@ -4,20 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Produk;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class ProdukController extends Controller
 {
     private array $kategoriOptions = [
-    'Buku',
-    'Elektronik',
-    'Fashion',
-    'Alat Tulis',
-    'Aksesoris',
-    'Lainnya',
-];
+        'Buku',
+        'Elektronik',
+        'Fashion',
+        'Alat Tulis',
+        'Aksesoris',
+        'Lainnya',
+    ];
 
     private array $fakultasOptions = [
         'SAINTEK',
@@ -125,12 +128,12 @@ class ProdukController extends Controller
             'kondisi' => ['required', 'string', Rule::in($this->kondisiOptions)],
             'fakultas' => ['required', 'string', Rule::in($this->fakultasOptions)],
             'deskripsi' => ['nullable', 'string', 'max:3000'],
-            'gambar' => ['nullable', 'file', 'max:4096'],
+            'gambar' => ['nullable', 'image', 'max:4096'],
             'aktif' => ['nullable'],
         ]);
 
         if ($request->hasFile('gambar')) {
-            $validated['gambar'] = $request->file('gambar')->store('produk', 'public');
+            $validated['gambar'] = $this->uploadProdukImage($request->file('gambar'));
         }
 
         $validated['user_id'] = Auth::id();
@@ -174,16 +177,14 @@ class ProdukController extends Controller
             'kondisi' => ['required', 'string', Rule::in($this->kondisiOptions)],
             'fakultas' => ['required', 'string', Rule::in($this->fakultasOptions)],
             'deskripsi' => ['nullable', 'string', 'max:3000'],
-            'gambar' => ['nullable', 'file', 'max:4096'],
+            'gambar' => ['nullable', 'image', 'max:4096'],
             'aktif' => ['nullable'],
         ]);
 
         if ($request->hasFile('gambar')) {
-            if ($produk->gambar && ! str_starts_with($produk->gambar, 'demo-products/') && Storage::disk('public')->exists($produk->gambar)) {
-                Storage::disk('public')->delete($produk->gambar);
-            }
+            $this->deleteProdukImage($produk->gambar);
 
-            $validated['gambar'] = $request->file('gambar')->store('produk', 'public');
+            $validated['gambar'] = $this->uploadProdukImage($request->file('gambar'));
         }
 
         $validated['aktif'] = $request->boolean('aktif');
@@ -199,15 +200,152 @@ class ProdukController extends Controller
     {
         $this->authorizeOwner($produk);
 
-        if ($produk->gambar && ! str_starts_with($produk->gambar, 'demo-products/') && Storage::disk('public')->exists($produk->gambar)) {
-            Storage::disk('public')->delete($produk->gambar);
-        }
+        $this->deleteProdukImage($produk->gambar);
 
         $produk->delete();
 
         return redirect()
             ->route('produk.saya')
             ->with('success', 'Produk berhasil dihapus.');
+    }
+
+    private function uploadProdukImage(UploadedFile $file): string
+    {
+        $supabaseUrl = $this->supabaseUrl();
+        $serviceRoleKey = $this->supabaseServiceRoleKey();
+        $bucket = $this->supabaseBucket();
+
+        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
+        $extension = preg_replace('/[^a-z0-9]/', '', $extension) ?: 'jpg';
+
+        $path = 'produk/' . now()->format('Y/m') . '/' . Str::uuid()->toString() . '.' . $extension;
+
+        $mimeType = $file->getMimeType() ?: 'application/octet-stream';
+        $filePath = $file->getRealPath() ?: $file->getPathname();
+
+        if (! is_readable($filePath)) {
+            throw ValidationException::withMessages([
+                'gambar' => 'File gambar tidak bisa dibaca.',
+            ]);
+        }
+
+        $uploadUrl = $supabaseUrl . '/storage/v1/object/' . $bucket . '/' . $path;
+
+        $response = Http::withHeaders([
+            'apikey' => $serviceRoleKey,
+            'Authorization' => 'Bearer ' . $serviceRoleKey,
+            'Content-Type' => $mimeType,
+            'cache-control' => '3600',
+            'x-upsert' => 'false',
+        ])->withBody(
+            file_get_contents($filePath),
+            $mimeType
+        )->post($uploadUrl);
+
+        if (! $response->successful()) {
+            throw ValidationException::withMessages([
+                'gambar' => 'Upload gambar gagal ke Supabase Storage. Detail: ' . $response->body(),
+            ]);
+        }
+
+        return $this->supabasePublicStorageUrl() . '/' . $path;
+    }
+
+    private function deleteProdukImage(?string $gambar): void
+    {
+        if (! $gambar) {
+            return;
+        }
+
+        if (str_starts_with($gambar, 'demo-products/')) {
+            return;
+        }
+
+        $path = $this->extractSupabasePath($gambar);
+
+        if (! $path) {
+            return;
+        }
+
+        $supabaseUrl = $this->supabaseUrl();
+        $serviceRoleKey = $this->supabaseServiceRoleKey();
+        $bucket = $this->supabaseBucket();
+
+        Http::withHeaders([
+            'apikey' => $serviceRoleKey,
+            'Authorization' => 'Bearer ' . $serviceRoleKey,
+            'Content-Type' => 'application/json',
+        ])->delete($supabaseUrl . '/storage/v1/object/' . $bucket, [
+            'prefixes' => [$path],
+        ]);
+    }
+
+    private function extractSupabasePath(string $gambar): ?string
+    {
+        $gambar = trim($gambar);
+
+        if ($gambar === '') {
+            return null;
+        }
+
+        $publicBaseUrl = $this->supabasePublicStorageUrl() . '/';
+
+        if (str_starts_with($gambar, $publicBaseUrl)) {
+            $path = substr($gambar, strlen($publicBaseUrl));
+            $path = strtok($path, '?') ?: $path;
+
+            return ltrim($path, '/');
+        }
+
+        if (str_starts_with($gambar, 'http://') || str_starts_with($gambar, 'https://')) {
+            return null;
+        }
+
+        return ltrim($gambar, '/');
+    }
+
+    private function supabaseUrl(): string
+    {
+        $url = rtrim((string) env('SUPABASE_URL'), '/');
+
+        if ($url === '') {
+            throw ValidationException::withMessages([
+                'gambar' => 'SUPABASE_URL belum diisi di Environment Variables.',
+            ]);
+        }
+
+        return $url;
+    }
+
+    private function supabaseServiceRoleKey(): string
+    {
+        $key = (string) env('SUPABASE_SERVICE_ROLE_KEY');
+
+        if ($key === '') {
+            throw ValidationException::withMessages([
+                'gambar' => 'SUPABASE_SERVICE_ROLE_KEY belum diisi di Environment Variables.',
+            ]);
+        }
+
+        return $key;
+    }
+
+    private function supabaseBucket(): string
+    {
+        return trim((string) env('SUPABASE_STORAGE_BUCKET', 'unimart'));
+    }
+
+    private function supabasePublicStorageUrl(): string
+    {
+        $publicUrl = rtrim((string) env('SUPABASE_PUBLIC_STORAGE_URL'), '/');
+
+        if ($publicUrl !== '') {
+            return $publicUrl;
+        }
+
+        return $this->supabaseUrl()
+            . '/storage/v1/object/public/'
+            . $this->supabaseBucket();
     }
 
     private function authorizeOwner(Produk $produk): void
