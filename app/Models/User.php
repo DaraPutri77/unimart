@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -15,15 +17,18 @@ class User extends Authenticatable
         'email',
         'password',
         'whatsapp',
-        'fakultas',
+        'is_admin',
         'foto_profil',
         'bio',
-        'is_admin',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    protected $appends = [
+        'foto_profil_url',
     ];
 
     protected function casts(): array
@@ -37,29 +42,20 @@ class User extends Authenticatable
 
     public function getFotoProfilUrlAttribute(): ?string
     {
-        if (empty($this->foto_profil)) {
+        if (! $this->foto_profil) {
             return null;
         }
 
-        if (str_starts_with($this->foto_profil, 'http://') || str_starts_with($this->foto_profil, 'https://')) {
+        if (Str::startsWith($this->foto_profil, ['http://', 'https://'])) {
             return $this->foto_profil;
         }
 
-        return asset('storage/' . $this->foto_profil);
-    }
+        $publicStorageUrl = rtrim((string) env('SUPABASE_PUBLIC_STORAGE_URL'), '/');
 
-    public function getAvatarUrlAttribute(): ?string
-    {
-        return $this->foto_profil_url;
-    }
+        if ($publicStorageUrl !== '') {
+            return $publicStorageUrl . '/' . ltrim($this->foto_profil, '/');
+        }
 
-    public function getProfilePhotoUrlAttribute(): ?string
-    {
-        return $this->foto_profil_url;
-    }
-
-    public function produks()
-    {
-        return $this->hasMany(Produk::class);
+        return asset('storage/' . ltrim($this->foto_profil, '/'));
     }
 }

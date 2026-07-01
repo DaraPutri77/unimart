@@ -17,6 +17,31 @@
         $namaParts = preg_split('/\s+/', $namaLengkap);
         $namaDepan = $isAdmin ? 'Admin' : ($namaParts[0] ?? 'User');
 
+        $inisialProfil = strtoupper(substr($namaDepan ?: 'U', 0, 1));
+
+        $fotoProfilUrl = null;
+
+        if ($user) {
+            if (! empty($user->foto_profil_url)) {
+                $fotoProfilUrl = $user->foto_profil_url;
+            } elseif (! empty($user->foto_profil)) {
+                if (
+                    str_starts_with($user->foto_profil, 'http://') ||
+                    str_starts_with($user->foto_profil, 'https://')
+                ) {
+                    $fotoProfilUrl = $user->foto_profil;
+                } else {
+                    $publicStorageUrl = rtrim((string) env('SUPABASE_PUBLIC_STORAGE_URL'), '/');
+
+                    if ($publicStorageUrl !== '') {
+                        $fotoProfilUrl = $publicStorageUrl . '/' . ltrim($user->foto_profil, '/');
+                    } else {
+                        $fotoProfilUrl = asset('storage/' . ltrim($user->foto_profil, '/'));
+                    }
+                }
+            }
+        }
+
         $jumlahKeranjang = 0;
         $jumlahPesananMasuk = 0;
 
@@ -147,10 +172,29 @@
             </div>
 
             <div class="flex shrink-0 items-center gap-3">
+                @if ($fotoProfilUrl)
+                    <img
+                        src="{{ $fotoProfilUrl }}"
+                        alt="{{ $namaLengkap }}"
+                        class="h-11 w-11 rounded-full border-2 border-pink-100 object-cover shadow-sm"
+                    >
+                @else
+                    <div class="flex h-11 w-11 items-center justify-center rounded-full border-2 border-pink-100 bg-pink-100 text-sm font-black text-pink-700 shadow-sm">
+                        {{ $inisialProfil }}
+                    </div>
+                @endif
+
                 <div class="hidden text-right sm:block">
                     <p class="whitespace-nowrap text-sm font-black leading-snug text-slate-900">
                         Halo, {{ $namaDepan }}
                     </p>
+
+                    @if (! $isAdmin && \Illuminate\Support\Facades\Route::has('profile.edit'))
+                        <a href="{{ route('profile.edit') }}"
+                           class="text-xs font-bold text-slate-500 hover:text-pink-700">
+                            Lihat Profil
+                        </a>
+                    @endif
                 </div>
 
                 <form method="POST" action="{{ route('logout') }}">
