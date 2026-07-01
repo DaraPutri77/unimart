@@ -2,95 +2,95 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    private array $fakultasOptions = [
+        'SAINTEK',
+        'FAI',
+        'FBBP',
+        'Fakultas Kesehatan',
+    ];
+
+    /**
+     * Display the user's profile form.
+     */
     public function edit(Request $request): View
     {
         return view('profile.edit', [
             'user' => $request->user(),
+            'fakultasOptions' => $this->fakultasOptions,
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    /**
+     * Update the user's profile information.
+     */
+    public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
 
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email')->ignore($user->id),
-            ],
-            'whatsapp' => ['nullable', 'string', 'max:30'],
-            'fakultas' => ['nullable', 'string', 'max:100'],
-            'bio' => ['nullable', 'string', 'max:1000'],
+        $validated = $request->validated();
 
-            'foto_profil' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'profile_photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-        ]);
+        unset($validated['foto_profil']);
+        unset($validated['hapus_foto_profil']);
 
-        if (Schema::hasColumn('users', 'name')) {
-            $user->name = $request->input('name');
+        if (array_key_exists('fakultas', $validated) && ! Schema::hasColumn('users', 'fakultas')) {
+            unset($validated['fakultas']);
         }
 
-        if (Schema::hasColumn('users', 'email')) {
-            if ($user->email !== $request->input('email') && Schema::hasColumn('users', 'email_verified_at')) {
-                $user->email_verified_at = null;
-            }
-
-            $user->email = $request->input('email');
+        if (array_key_exists('whatsapp', $validated) && ! Schema::hasColumn('users', 'whatsapp')) {
+            unset($validated['whatsapp']);
         }
 
-        if (Schema::hasColumn('users', 'whatsapp')) {
-            $user->whatsapp = $request->input('whatsapp');
+        if (array_key_exists('bio', $validated) && ! Schema::hasColumn('users', 'bio')) {
+            unset($validated['bio']);
         }
 
-        if (Schema::hasColumn('users', 'fakultas')) {
-            $user->fakultas = $request->input('fakultas');
+        if ($request->boolean('hapus_foto_profil') && Schema::hasColumn('users', 'foto_profil')) {
+            $this->deleteProfileImage($user->foto_profil);
+
+            $validated['foto_profil'] = null;
         }
 
-        if (Schema::hasColumn('users', 'bio')) {
-            $user->bio = $request->input('bio');
+        if ($request->hasFile('foto_profil') && Schema::hasColumn('users', 'foto_profil')) {
+            $this->deleteProfileImage($user->foto_profil);
+
+            $validated['foto_profil'] = $this->uploadProfileImage($request->file('foto_profil'));
         }
 
-        $fileField = null;
-
-        foreach (['foto_profil', 'avatar', 'photo', 'foto', 'profile_photo'] as $field) {
-            if ($request->hasFile($field)) {
-                $fileField = $field;
-                break;
-            }
+        if (
+            array_key_exists('email', $validated) &&
+            $validated['email'] !== $user->email &&
+            Schema::hasColumn('users', 'email_verified_at')
+        ) {
+            $validated['email_verified_at'] = null;
         }
 
-        if ($fileField && Schema::hasColumn('users', 'foto_profil')) {
-            if (! empty($user->foto_profil)) {
-                Storage::disk('public')->delete($user->foto_profil);
-            }
-
-            $user->foto_profil = $request->file($fileField)->store('foto-profil', 'public');
-        }
+        $user->fill($validated);
 
         $user->save();
 
         return Redirect::route('profile.edit')
+            ->with('status', 'profile-updated')
             ->with('success', 'Profil berhasil diperbarui.');
     }
 
+    /**
+     * Delete the user's account.
+     */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
@@ -99,8 +99,8 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        if (Schema::hasColumn('users', 'foto_profil') && ! empty($user->foto_profil)) {
-            Storage::disk('public')->delete($user->foto_profil);
+        if (Schema::hasColumn('users', 'foto_profil')) {
+            $this->deleteProfileImage($user->foto_profil);
         }
 
         Auth::logout();
@@ -108,8 +108,150 @@ class ProfileController extends Controller
         $user->delete();
 
         $request->session()->invalidate();
+
         $request->session()->regenerateToken();
 
-        return Redirect::to('/')->with('success', 'Akun berhasil dihapus.');
+        return Redirect::to('/');
+    }
+
+    private function uploadProfileImage(UploadedFile $file): string
+    {
+        $supabaseUrl = $this->supabaseUrl();
+        $serviceRoleKey = $this->supabaseServiceRoleKey();
+        $bucket = $this->supabaseBucket();
+
+        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
+        $extension = preg_replace('/[^a-z0-9]/', '', $extension) ?: 'jpg';
+
+        $path = 'foto-profil/' . now()->format('Y/m') . '/' . Str::uuid()->toString() . '.' . $extension;
+
+        $mimeType = $file->getMimeType() ?: 'application/octet-stream';
+        $filePath = $file->getRealPath() ?: $file->getPathname();
+
+        if (! is_readable($filePath)) {
+            throw ValidationException::withMessages([
+                'foto_profil' => 'File foto profil tidak bisa dibaca.',
+            ]);
+        }
+
+        $uploadUrl = $supabaseUrl . '/storage/v1/object/' . $bucket . '/' . $path;
+
+        $response = Http::withHeaders([
+            'apikey' => $serviceRoleKey,
+            'Authorization' => 'Bearer ' . $serviceRoleKey,
+            'Content-Type' => $mimeType,
+            'cache-control' => '3600',
+            'x-upsert' => 'false',
+        ])->withBody(
+            file_get_contents($filePath),
+            $mimeType
+        )->post($uploadUrl);
+
+        if (! $response->successful()) {
+            throw ValidationException::withMessages([
+                'foto_profil' => 'Upload foto profil gagal ke Supabase Storage. Detail: ' . $response->body(),
+            ]);
+        }
+
+        return $path;
+    }
+
+    private function deleteProfileImage(?string $fotoProfil): void
+    {
+        if (! $fotoProfil) {
+            return;
+        }
+
+        $path = $this->extractSupabasePath($fotoProfil);
+
+        if (! $path) {
+            return;
+        }
+
+        $supabaseUrl = $this->supabaseUrl();
+        $serviceRoleKey = $this->supabaseServiceRoleKey();
+        $bucket = $this->supabaseBucket();
+
+        Http::withHeaders([
+            'apikey' => $serviceRoleKey,
+            'Authorization' => 'Bearer ' . $serviceRoleKey,
+            'Content-Type' => 'application/json',
+        ])->delete($supabaseUrl . '/storage/v1/object/' . $bucket, [
+            'prefixes' => [$path],
+        ]);
+    }
+
+    private function extractSupabasePath(string $fotoProfil): ?string
+    {
+        $fotoProfil = trim($fotoProfil);
+
+        if ($fotoProfil === '') {
+            return null;
+        }
+
+        $publicBaseUrl = $this->supabasePublicStorageUrl() . '/';
+
+        if (str_starts_with($fotoProfil, $publicBaseUrl)) {
+            $path = substr($fotoProfil, strlen($publicBaseUrl));
+            $path = strtok($path, '?') ?: $path;
+
+            return ltrim($path, '/');
+        }
+
+        if (str_starts_with($fotoProfil, 'http://') || str_starts_with($fotoProfil, 'https://')) {
+            return null;
+        }
+
+        return ltrim($fotoProfil, '/');
+    }
+
+    private function supabaseUrl(): string
+    {
+        $url = rtrim((string) env('SUPABASE_URL'), '/');
+
+        if ($url === '') {
+            throw ValidationException::withMessages([
+                'foto_profil' => 'SUPABASE_URL belum diisi di Environment Variables.',
+            ]);
+        }
+
+        return $url;
+    }
+
+    private function supabaseServiceRoleKey(): string
+    {
+        $key = (string) env('SUPABASE_SERVICE_ROLE_KEY');
+
+        if ($key === '') {
+            throw ValidationException::withMessages([
+                'foto_profil' => 'SUPABASE_SERVICE_ROLE_KEY belum diisi di Environment Variables.',
+            ]);
+        }
+
+        return $key;
+    }
+
+    private function supabaseBucket(): string
+    {
+        $bucket = trim((string) env('SUPABASE_STORAGE_BUCKET', 'unimart'));
+
+        if ($bucket === '') {
+            return 'unimart';
+        }
+
+        return $bucket;
+    }
+
+    private function supabasePublicStorageUrl(): string
+    {
+        $publicUrl = rtrim((string) env('SUPABASE_PUBLIC_STORAGE_URL'), '/');
+
+        if ($publicUrl !== '') {
+            return $publicUrl;
+        }
+
+        return $this->supabaseUrl()
+            . '/storage/v1/object/public/'
+            . $this->supabaseBucket();
     }
 }
